@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #0B0B0C;
+  color: #F3EFE4;
+  font-family: 'Jost', sans-serif;
+}
+
+.font-display { font-family: 'Cormorant Garamond', serif; }
+
+/* signature: a thin gold hairline that "blooms" outward on hover, echoing the logo's flower motif */
+.bloom-underline {
+  position: relative;
+}
+.bloom-underline::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 0;
+  height: 1px;
+  background: #C6A15B;
+  transition: all 0.4s ease;
+  transform: translateX(-50%);
+}
+.bloom-underline:hover::after {
+  width: 100%;
+}
+
+::selection {
+  background: #C6A15B;
+  color: #0B0B0C;
+}
+
+/* Visible focus rings for accessibility */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #C6A15B;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* Admin console uses Bootstrap; scope a few overrides so it doesn't fight Tailwind resets */
+.admin-shell {
+  font-family: 'Jost', system-ui, sans-serif;
+  background-color: #f5f4f2;
+  min-height: 100vh;
+  color: #1a1a1a;
+}
