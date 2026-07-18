@@ -19,7 +19,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        String normalizedEmail = normalizeEmail(email);
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with email: " + email));
 
         return org.springframework.security.core.userdetails.User.builder()
@@ -28,5 +29,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .disabled(!user.isEnabled())
                 .authorities(List.of(new SimpleGrantedAuthority(user.getRole().name())))
                 .build();
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase();
     }
 }

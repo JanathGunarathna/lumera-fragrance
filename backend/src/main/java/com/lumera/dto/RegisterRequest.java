@@ -3,19 +3,59 @@ package com.lumera.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
-@Data
 public class RegisterRequest {
     @NotBlank
     private String fullName;
 
-    @Email @NotBlank
+    @Email
+    @NotBlank
     private String email;
 
-    @NotBlank @Size(min = 6, message = "Password must be at least 6 characters")
+    @NotBlank
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
     private String phone;
     private String address;
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }
