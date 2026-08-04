@@ -1,0 +1,79 @@
+@use 'variables' as v;
+
+// ---------------------------------------------------------------------
+// Shimmer gold text — animated gradient sweep, used for hero headlines
+// and other moments that should feel like light catching metal.
+// ---------------------------------------------------------------------
+.text-shimmer {
+  @include v.gold-gradient-text;
+  animation: shimmer-sweep 6s linear infinite;
+}
+
+@keyframes shimmer-sweep {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+// ---------------------------------------------------------------------
+// Film grain overlay — a subtle texture so large dark sections don't
+// read as flat, digital black. Sits above content, pointer-events none.
+// ---------------------------------------------------------------------
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+// ---------------------------------------------------------------------
+// Infinite marquee — used for the ingredient / ethos strip on the
+// welcome page. Pauses on hover so it's readable if someone wants to
+// actually read it.
+// ---------------------------------------------------------------------
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+// ---------------------------------------------------------------------
+// Custom scrollbar — thin gold thumb on dark track, matches brand
+// instead of the default OS scrollbar breaking the aesthetic.
+// ---------------------------------------------------------------------
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: v.$ink;
+}
+::-webkit-scrollbar-thumb {
+  background: v.$gold-dark;
+  border: 2px solid v.$ink;
+  border-radius: 6px;
+  &:hover { background: v.$gold; }
+}
+
+// ---------------------------------------------------------------------
+// Floating petal — small ambient decoration for the hero. Cheap to run,
+// disabled entirely under reduced-motion (see index.css global rule).
+// ---------------------------------------------------------------------
+.petal-float {
+  animation: petal-drift 9s ease-in-out infinite;
+}
+
+@keyframes petal-drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-18px) rotate(6deg); }
+}

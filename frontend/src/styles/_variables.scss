@@ -1,0 +1,22 @@
+// Mirrors tailwind.config.js — kept in one place so custom SCSS effects
+// (that Tailwind utilities can't express, like multi-stop gradients or
+// keyframe-driven shimmer) stay visually consistent with the rest of the app.
+
+$ink: #0b0b0c;
+$panel: #141416;
+$gold: #c6a15b;
+$gold-light: #e4cd97;
+$gold-dark: #8e6f35;
+$cream: #f3efe4;
+$fern: #3f5b45;
+
+$font-display: 'Cormorant Garamond', serif;
+$font-body: 'Jost', sans-serif;
+
+@mixin gold-gradient-text {
+  background: linear-gradient(100deg, $gold-dark 0%, $gold-light 35%, $gold 60%, $gold-light 80%, $gold-dark 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
