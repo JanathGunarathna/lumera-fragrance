@@ -35,7 +35,7 @@ export default function Checkout() {
   }
 
   if (items.length === 0) {
-    return <div className="max-w-3xl mx-auto px-6 py-24 text-center text-cream/50">Your bag is empty. <a href="/products" className="text-gold">Browse fragrances</a>.</div>
+    return <div className="max-w-3xl mx-auto px-6 py-24 text-center text-muted">Your bag is empty. <a href="/products" className="text-gold">Browse fragrances</a>.</div>
   }
 
   return (
@@ -43,7 +43,7 @@ export default function Checkout() {
       <h1 className="font-display text-4xl text-cream mb-10">Checkout</h1>
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Shipping Address</label>
+          <label className="block text-xs uppercase tracking-widest text-muted mb-2">Shipping Address</label>
           <textarea
             required
             value={form.shippingAddress}
@@ -54,7 +54,7 @@ export default function Checkout() {
           />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Phone Number</label>
+          <label className="block text-xs uppercase tracking-widest text-muted mb-2">Phone Number</label>
           <input
             required
             value={form.shippingPhone}
@@ -64,14 +64,14 @@ export default function Checkout() {
           />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-3">Payment Method</label>
+          <label className="block text-xs uppercase tracking-widest text-muted mb-3">Payment Method</label>
           <div className="grid grid-cols-3 gap-3">
             {['CARD', 'UPI', 'COD'].map(m => (
               <button
                 type="button"
                 key={m}
                 onClick={() => setForm({ ...form, paymentMethod: m })}
-                className={`py-3 text-sm uppercase tracking-widest border ${form.paymentMethod === m ? 'bg-gold text-ink border-gold' : 'border-white/20 text-cream/70 hover:border-gold'}`}
+                className={`py-3 text-sm uppercase tracking-widest border ${form.paymentMethod === m ? 'bg-gold text-ink border-gold' : 'border-white/20 text-cream/90 hover:border-gold'}`}
               >
                 {m === 'COD' ? 'Cash on Delivery' : m}
               </button>
@@ -80,7 +80,7 @@ export default function Checkout() {
         </div>
 
         <div className="bg-panel border border-white/10 p-6">
-          <div className="flex justify-between text-cream/70 text-sm mb-2">
+          <div className="flex justify-between text-cream/90 text-sm mb-2">
             <span>Subtotal</span><span>${cartTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-cream font-medium border-t border-white/10 pt-3">

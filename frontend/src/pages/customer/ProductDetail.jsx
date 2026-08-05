@@ -19,7 +19,7 @@ export default function ProductDetail() {
     api.get(`/feedback/public/product/${id}`).then(res => setReviews(res.data)).catch(() => {})
   }, [id])
 
-  if (!product) return <div className="max-w-7xl mx-auto px-6 py-24 text-cream/50">Loading…</div>
+  if (!product) return <div className="max-w-7xl mx-auto px-6 py-24 text-muted">Loading…</div>
 
   const hasDiscount = product.discountPrice && product.discountPrice < product.price
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null
@@ -40,12 +40,12 @@ export default function ProductDetail() {
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (
-          <span className="font-display text-8xl text-gold/30">L</span>
+          <span className="font-display text-8xl text-gold">L</span>
         )}
       </div>
 
       <div>
-        <p className="uppercase text-xs tracking-widest2 text-cream/40">{product.brand || 'Lumera'}</p>
+        <p className="uppercase text-xs tracking-widest2 text-muted2">{product.brand || 'Lumera'}</p>
         <h1 className="font-display text-4xl text-cream mt-2">{product.name}</h1>
         {avgRating && <p className="text-gold text-sm mt-2">★ {avgRating} ({reviews.length} reviews)</p>}
 
@@ -53,21 +53,21 @@ export default function ProductDetail() {
           {hasDiscount ? (
             <>
               <span className="text-2xl text-gold font-medium">${product.discountPrice}</span>
-              <span className="line-through text-cream/40">${product.price}</span>
+              <span className="line-through text-muted2">${product.price}</span>
             </>
           ) : (
             <span className="text-2xl text-gold font-medium">${product.price}</span>
           )}
-          <span className="text-cream/40 text-sm">/ {product.volume}</span>
+          <span className="text-muted2 text-sm">/ {product.volume}</span>
         </div>
 
-        <p className="text-cream/70 leading-relaxed mt-6">{product.description}</p>
+        <p className="text-cream/90 leading-relaxed mt-6">{product.description}</p>
 
         <div className="mt-8 flex items-center gap-4">
           <div className="flex items-center border border-white/20">
-            <button onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-2 text-cream/70 hover:text-gold">−</button>
+            <button onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-2 text-cream/90 hover:text-gold">−</button>
             <span className="px-4 text-cream">{qty}</span>
-            <button onClick={() => setQty(q => q + 1)} className="px-3 py-2 text-cream/70 hover:text-gold">+</button>
+            <button onClick={() => setQty(q => q + 1)} className="px-3 py-2 text-cream/90 hover:text-gold">+</button>
           </div>
           <button
             onClick={handleAdd}
@@ -79,20 +79,20 @@ export default function ProductDetail() {
         </div>
 
         {product.stock > 0 && product.stock <= 10 && (
-          <p className="text-xs text-gold/70 mt-3">Only {product.stock} left in this batch.</p>
+          <p className="text-xs text-gold mt-3">Only {product.stock} left in this batch.</p>
         )}
 
         <div className="mt-16 border-t border-white/10 pt-8">
           <h2 className="font-display text-2xl text-cream mb-6">Reviews</h2>
           {reviews.length === 0 ? (
-            <p className="text-cream/50 text-sm">No reviews yet for this fragrance.</p>
+            <p className="text-muted text-sm">No reviews yet for this fragrance.</p>
           ) : (
             <div className="space-y-6">
               {reviews.map(r => (
                 <div key={r.id} className="border-b border-white/5 pb-4">
                   <p className="text-gold text-sm">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</p>
-                  <p className="text-cream/70 text-sm mt-2">{r.comment}</p>
-                  <p className="text-cream/40 text-xs mt-1">{r.user?.fullName || 'Verified customer'}</p>
+                  <p className="text-cream/90 text-sm mt-2">{r.comment}</p>
+                  <p className="text-muted2 text-xs mt-1">{r.user?.fullName || 'Verified customer'}</p>
                 </div>
               ))}
             </div>

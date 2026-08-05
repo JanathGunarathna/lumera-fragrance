@@ -61,11 +61,11 @@ export default function Login() {
 
         <div className="relative z-10 max-w-md px-12 text-center">
           <img src={logo} alt="Lumera Fragrance" className="w-56 mx-auto mb-10 select-none" draggable="false" />
-          <p className="uppercase text-xs tracking-widest2 text-gold/70 mb-4">Welcome Back</p>
+          <p className="uppercase text-xs tracking-widest2 text-gold mb-4">Welcome Back</p>
           <h1 className="font-display text-3xl text-cream leading-snug mb-4">
             Every login opens <span className="text-gold italic">one more hour</span> of bloom.
           </h1>
-          <p className="text-cream/50 text-sm leading-relaxed">
+          <p className="text-muted text-sm leading-relaxed">
             Sign in to track your orders, revisit your favorite scents, and be first to know
             when the next cereus blossom opens.
           </p>
@@ -78,7 +78,7 @@ export default function Login() {
           {/* mobile logo */}
           <img src={logo} alt="Lumera Fragrance" className="w-40 mx-auto mb-10 lg:hidden select-none" draggable="false" />
 
-          <p className="uppercase text-xs tracking-widest2 text-gold/70 mb-2 text-center lg:text-left">
+          <p className="uppercase text-xs tracking-widest2 text-gold mb-2 text-center lg:text-left">
             Sign In
           </p>
           <h2 className="font-display text-3xl text-cream mb-8 text-center lg:text-left">
@@ -97,7 +97,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} noValidate>
             {/* Email */}
             <div className="mb-5">
-              <label htmlFor="email" className="block uppercase text-xs tracking-widest text-cream/60 mb-2">
+              <label htmlFor="email" className="block uppercase text-xs tracking-widest text-muted mb-2">
                 Email
               </label>
               <input
@@ -108,7 +108,7 @@ export default function Login() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className={`form-control bg-transparent border-0 border-b rounded-none px-0 py-3 text-cream placeholder:text-cream/30 focus:shadow-none focus:ring-0 focus:outline-none transition-colors
+                className={`form-control bg-transparent border-0 border-b rounded-none px-0 py-3 text-cream placeholder:text-muted2 focus:shadow-none focus:ring-0 focus:outline-none transition-colors
                   ${errors.email ? 'border-red-400' : 'border-white/20 focus:border-gold'}`}
               />
               {errors.email && (
@@ -119,10 +119,10 @@ export default function Login() {
             {/* Password */}
             <div className="mb-3">
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="uppercase text-xs tracking-widest text-cream/60">
+                <label htmlFor="password" className="uppercase text-xs tracking-widest text-muted">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-xs text-gold/70 hover:text-gold transition-colors">
+                <Link to="/forgot-password" className="text-xs text-gold hover:text-gold transition-colors">
                   Forgot?
                 </Link>
               </div>
@@ -135,13 +135,13 @@ export default function Login() {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className={`form-control bg-transparent border-0 border-b rounded-none px-0 py-3 pr-10 text-cream placeholder:text-cream/30 focus:shadow-none focus:ring-0 focus:outline-none transition-colors
+                  className={`form-control bg-transparent border-0 border-b rounded-none px-0 py-3 pr-10 text-cream placeholder:text-muted2 focus:shadow-none focus:ring-0 focus:outline-none transition-colors
                     ${errors.password ? 'border-red-400' : 'border-white/20 focus:border-gold'}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-cream/40 hover:text-gold text-xs uppercase tracking-wide transition-colors"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-muted2 hover:text-gold text-xs uppercase tracking-wide transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? 'Hide' : 'Show'}
@@ -161,7 +161,7 @@ export default function Login() {
                 onChange={(e) => setRemember(e.target.checked)}
                 className="form-check-input bg-transparent border-white/30 checked:bg-gold checked:border-gold focus:ring-0 focus:ring-offset-0"
               />
-              <label htmlFor="remember" className="form-check-label text-sm text-cream/60 cursor-pointer select-none">
+              <label htmlFor="remember" className="form-check-label text-sm text-muted cursor-pointer select-none">
                 Keep me signed in
               </label>
             </div>
@@ -184,7 +184,7 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-cream/50 mt-8">
+          <p className="text-center text-sm text-muted mt-8">
             New to Lumera?{' '}
             <Link to="/register" className="text-gold hover:text-gold-light transition-colors">
               Create an account
@@ -192,7 +192,7 @@ export default function Login() {
           </p>
 
           <p className="text-center mt-10">
-            <Link to="/" className="text-xs uppercase tracking-widest text-cream/30 hover:text-gold transition-colors">
+            <Link to="/" className="text-xs uppercase tracking-widest text-muted2 hover:text-gold transition-colors">
               ← Back to Home
             </Link>
           </p>

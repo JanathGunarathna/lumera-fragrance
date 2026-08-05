@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../../api/axiosConfig";
 import logo from "../../assets/lumera-logo-transparent.png";
+import bgPattern from "../../assets/botanical-pattern.svg";
 import ProductCard from "../../components/customer/ProductCard";
 import Reveal, { Stagger } from "../../components/common/Reveal";
+import Fireflies from "../../components/common/Fireflies";
+
 
 const ethos = [
   "Hand-Blended in Small Batches",
@@ -55,14 +58,29 @@ export default function Home() {
     <div className="overflow-x-clip">
       {/* Hero — the flower is the thesis */}
       <section className="relative overflow-hidden border-b border-white/10">
+        {/* Background image layer — self-authored botanical/celestial pattern,
+            not a stock photo, so there's no licensing question. */}
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: `url(${bgPattern})`,
+            backgroundSize: '360px 360px',
+            backgroundRepeat: 'repeat',
+          }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/70 to-ink" aria-hidden="true" />
         <div className="grain-overlay" />
-        <div className="max-w-7xl mx-auto px-6 py-28 md:py-36 grid md:grid-cols-2 gap-12 items-center">
+        <div className="mist-layer"><span /><span /></div>
+        <Fireflies count={16} />
+
+        <div className="relative max-w-7xl mx-auto px-6 py-28 md:py-36 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="uppercase text-xs tracking-widest2 text-gold/80 mb-6"
+              className="inline-block uppercase text-xs tracking-widest2 text-gold mb-6 border border-gold/30 rounded-full px-4 py-1.5"
             >
               The Night-Blooming Collection
             </motion.p>
@@ -82,7 +100,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.28 }}
-              className="mt-6 text-cream/60 max-w-md leading-relaxed"
+              className="mt-6 text-muted max-w-md leading-relaxed"
             >
               Lumera fragrances are composed around the cereus blossom — opening
               only under moonlight, gone by dawn. We bottle that fleeting hour.
@@ -115,8 +133,12 @@ export default function Home() {
             transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="relative aspect-square flex items-center justify-center"
           >
-            <div
-              className="absolute inset-0 rounded-full bg-gold/5 blur-3xl"
+            {/* slow pulsing glow, distinct from the static blur circle — reads
+                as something faintly alive/breathing behind the mark */}
+            <motion.div
+              className="absolute inset-0 rounded-full bg-gold/10 blur-3xl"
+              animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.08, 1] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               aria-hidden="true"
             />
             {/* slow ambient rotation ring, purely decorative */}
@@ -136,6 +158,23 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
+
+        {/* Scroll cue */}
+        <motion.div
+          className="relative hidden md:flex justify-center pb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.6 }}
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="w-5 h-8 rounded-full border border-gold/40 flex items-start justify-center p-1.5"
+            aria-hidden="true"
+          >
+            <span className="w-1 h-1.5 rounded-full bg-gold" />
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Ethos marquee — auto-scrolling strip, pauses on hover */}
@@ -144,9 +183,9 @@ export default function Home() {
           {[...ethos, ...ethos].map((line, i) => (
             <span
               key={i}
-              className="mx-8 shrink-0 uppercase text-xs tracking-widest2 text-cream/40 whitespace-nowrap"
+              className="mx-8 shrink-0 uppercase text-xs tracking-widest2 text-muted2 whitespace-nowrap"
             >
-              {line} <span className="text-gold/50 ml-8">✦</span>
+              {line} <span className="text-gold ml-8">✦</span>
             </span>
           ))}
         </div>
@@ -156,7 +195,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-6 py-24">
         <Reveal className="flex items-end justify-between mb-10">
           <div>
-            <p className="uppercase text-xs tracking-widest2 text-gold/70 mb-2">
+            <p className="uppercase text-xs tracking-widest2 text-gold mb-2">
               Featured
             </p>
             <h2 className="font-display text-4xl text-cream">
@@ -165,7 +204,7 @@ export default function Home() {
           </div>
           <Link
             to="/products"
-            className="bloom-underline text-sm text-cream/70 hover:text-gold hidden md:inline"
+            className="bloom-underline text-sm text-cream/90 hover:text-gold hidden md:inline"
           >
             View all
           </Link>
@@ -190,7 +229,7 @@ export default function Home() {
           ].map((item, i) => (
             <Reveal key={item.title} delay={i * 0.1}>
               <h3 className="font-display text-2xl text-gold mb-2">{item.title}</h3>
-              <p className="text-cream/60 text-sm">{item.body}</p>
+              <p className="text-muted text-sm">{item.body}</p>
             </Reveal>
           ))}
         </Stagger>
@@ -199,7 +238,7 @@ export default function Home() {
       {/* Testimonials */}
       <section className="max-w-7xl mx-auto px-6 py-24">
         <Reveal className="text-center max-w-2xl mx-auto mb-14">
-          <p className="uppercase text-xs tracking-widest2 text-gold/70 mb-2">
+          <p className="uppercase text-xs tracking-widest2 text-gold mb-2">
             In Their Words
           </p>
           <h2 className="font-display text-4xl text-cream">
@@ -212,15 +251,15 @@ export default function Home() {
             <Reveal
               key={t.name}
               delay={i * 0.12}
-              className="border border-white/10 bg-panel p-8 flex flex-col"
+              className="border border-white/10 bg-surface p-8 flex flex-col shadow-md shadow-black/30"
             >
-              <span className="font-display text-5xl text-gold/30 leading-none mb-4" aria-hidden="true">
+              <span className="font-display text-5xl text-gold leading-none mb-4" aria-hidden="true">
                 "
               </span>
-              <p className="text-cream/70 text-sm leading-relaxed flex-1">{t.quote}</p>
+              <p className="text-cream/90 text-sm leading-relaxed flex-1">{t.quote}</p>
               <div className="mt-6 pt-6 border-t border-white/10">
                 <p className="text-cream text-sm">{t.name}</p>
-                <p className="text-cream/40 text-xs uppercase tracking-widest mt-1">{t.detail}</p>
+                <p className="text-muted2 text-xs uppercase tracking-widest mt-1">{t.detail}</p>
               </div>
             </Reveal>
           ))}
@@ -231,13 +270,13 @@ export default function Home() {
       <section className="relative border-t border-white/10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-panel to-ink" aria-hidden="true" />
         <Reveal className="relative max-w-2xl mx-auto px-6 py-24 text-center">
-          <p className="uppercase text-xs tracking-widest2 text-gold/70 mb-3">
+          <p className="uppercase text-xs tracking-widest2 text-gold mb-3">
             Stay in Bloom
           </p>
           <h2 className="font-display text-4xl text-cream mb-4">
             One Email, the Night It Opens.
           </h2>
-          <p className="text-cream/60 mb-8 leading-relaxed">
+          <p className="text-muted mb-8 leading-relaxed">
             Join the list for early access to limited releases and the one night a
             year we restock the cereus absolute.
           </p>
@@ -254,7 +293,7 @@ export default function Home() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="bg-transparent border border-white/20 focus:border-gold text-cream placeholder:text-cream/30 px-4 py-3 text-sm w-full sm:w-72 outline-none transition-colors"
+                className="bg-transparent border border-white/20 focus:border-gold text-cream placeholder:text-muted2 px-4 py-3 text-sm w-full sm:w-72 outline-none transition-colors"
               />
               <button
                 type="submit"

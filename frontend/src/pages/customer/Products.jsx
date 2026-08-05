@@ -32,7 +32,7 @@ export default function Products() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-16">
       <Reveal className="mb-12">
-        <p className="uppercase text-xs tracking-widest2 text-gold/70 mb-2">Shop</p>
+        <p className="uppercase text-xs tracking-widest2 text-gold mb-2">Shop</p>
         <h1 className="font-display text-5xl text-cream">All Fragrances</h1>
       </Reveal>
 
@@ -42,7 +42,7 @@ export default function Products() {
             <button
               key={c}
               onClick={() => setParams(c === 'All' ? {} : { category: c })}
-              className={`relative px-4 py-2 text-xs uppercase tracking-widest border transition-colors ${category === c ? 'text-ink border-gold' : 'border-white/20 text-cream/70 hover:border-gold hover:text-gold'}`}
+              className={`relative px-4 py-2 text-xs uppercase tracking-widest border transition-colors ${category === c ? 'text-ink border-gold' : 'border-white/20 text-cream/90 hover:border-gold hover:text-gold'}`}
             >
               {category === c && (
                 <motion.span
@@ -59,7 +59,7 @@ export default function Products() {
           <select
             value={gender}
             onChange={e => setGender(e.target.value)}
-            className="bg-panel border border-white/20 text-cream/80 text-sm px-3 py-2 focus:border-gold outline-none transition-colors"
+            className="bg-panel border border-white/20 text-cream/90 text-sm px-3 py-2 focus:border-gold outline-none transition-colors"
           >
             {genders.map(g => <option key={g} value={g}>{g}</option>)}
           </select>
@@ -68,7 +68,7 @@ export default function Products() {
             placeholder="Search fragrances..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-panel border border-white/20 text-cream/80 text-sm px-3 py-2 w-56 focus:border-gold outline-none transition-colors"
+            className="bg-panel border border-white/20 text-cream/90 text-sm px-3 py-2 w-56 focus:border-gold outline-none transition-colors"
           />
         </div>
       </Reveal>
@@ -80,7 +80,7 @@ export default function Products() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-cream/50"
+            className="text-muted"
           >
             Loading fragrances…
           </motion.p>
@@ -90,7 +90,7 @@ export default function Products() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-cream/50"
+            className="text-muted"
           >
             No fragrances match your filters yet. Try a different category.
           </motion.p>

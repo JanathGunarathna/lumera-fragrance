@@ -23,23 +23,23 @@ export default function ProductCard({ product }) {
 
   return (
     <Link to={`/products/${product.id}`} className="group block">
-      <div className="aspect-[3/4] bg-panel border border-white/10 flex items-center justify-center overflow-hidden">
+      <div className="aspect-[3/4] bg-surface border border-white/10 group-hover:border-gold/50 flex items-center justify-center overflow-hidden transition-colors duration-300 shadow-md shadow-black/30 group-hover:shadow-gold/10">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
         ) : (
-          <span className="font-display text-5xl text-gold/30">L</span>
+          <span className="font-display text-5xl text-gold">L</span>
         )}
       </div>
       <div className="pt-4 flex justify-between items-start">
         <div>
-          <p className="text-[11px] uppercase tracking-widest2 text-cream/40">{product.brand || 'Lumera'}</p>
+          <p className="text-[11px] uppercase tracking-widest2 text-muted2">{product.brand || 'Lumera'}</p>
           <h3 className="font-display text-xl text-cream mt-1">{product.name}</h3>
-          <p className="text-xs text-cream/50 mt-1">{product.volume}</p>
+          <p className="text-xs text-muted mt-1">{product.volume}</p>
         </div>
         <div className="text-right">
           {hasDiscount ? (
             <>
-              <p className="text-sm line-through text-cream/40">${product.price}</p>
+              <p className="text-sm line-through text-muted2">${product.price}</p>
               <p className="text-gold font-medium">${product.discountPrice}</p>
             </>
           ) : (

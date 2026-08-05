@@ -2,11 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   Color tokens — the ONE place to change the site's palette.
+   tailwind.config.js reads these same variables (see theme.extend.colors),
+   so every `bg-ink`, `text-gold`, `bg-panel`, etc. utility class across the
+   whole app updates automatically when you edit a value here — including
+   opacity variants like `border-gold/20` or `bg-gold/10`.
+
+   Values are space-separated R G B triplets (NOT "#hex" and NOT "rgb(...)")
+   — that's what lets Tailwind inject its own alpha value for the /NN
+   opacity modifiers via rgb(rgb(var(--color-gold)) / <alpha-value>). If you
+   add a new color, convert its hex to R G B decimals in this same format.
+   ========================================================================== */
+:root {
+  --color-ink: 39 39 47;
+  --color-panel: 47 39 58;
+  --color-surface: 93 59 128;
+
+  --color-gold: 201 165 99;
+  --color-gold-light: 231 187 84;
+  --color-gold-dark: 169 149 112;
+
+  --color-cream: 224 206 156;
+  --color-muted: 209 154 27;
+  --color-muted2: 234 187 77;
+  --color-fern: 34 212 61;
+}
+
 html { scroll-behavior: smooth; }
 
 body {
-  background-color: #0B0B0C;
-  color: #F3EFE4;
+  background-color: rgb(var(--color-ink));
+  color: rgb(var(--color-cream));
   font-family: 'Jost', sans-serif;
 }
 
@@ -20,10 +47,10 @@ body {
   content: '';
   position: absolute;
   left: 50%;
-  bottom: -6px;
+  bottom: -2px;
   width: 0;
   height: 1px;
-  background: #C6A15B;
+  background: rgb(var(--color-gold));
   transition: all 0.4s ease;
   transform: translateX(-50%);
 }
@@ -32,13 +59,13 @@ body {
 }
 
 ::selection {
-  background: #C6A15B;
-  color: #0B0B0C;
+  background: rgb(var(--color-gold));
+  color: rgb(var(--color-ink));
 }
 
 /* Visible focus rings for accessibility */
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid #C6A15B;
+  outline: 2px solid rgb(var(--color-gold));
   outline-offset: 2px;
 }
 
@@ -52,4 +79,124 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   background-color: #f5f4f2;
   min-height: 100vh;
   color: #1a1a1a;
+}
+
+/* ==========================================================================
+   Signature effects — ported from SCSS to plain CSS (project now uses only
+   Tailwind + this one stylesheet, no preprocessor). Functionally identical
+   to the old .scss versions; just var(--color-*) instead of $variables and
+   no @mixin, since plain CSS has neither.
+   ========================================================================== */
+
+/* Shimmer gold text — animated gradient sweep, used for hero headlines. */
+.text-shimmer {
+  background: linear-gradient(
+    100deg,
+    rgb(var(--color-gold-dark)) 0%,
+    rgb(var(--color-gold-light)) 35%,
+    rgb(var(--color-gold)) 60%,
+    rgb(var(--color-gold-light)) 80%,
+    rgb(var(--color-gold-dark)) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-sweep 6s linear infinite;
+}
+
+@keyframes shimmer-sweep {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Film grain overlay — subtle texture so large dark sections don't read as flat, digital black. */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Infinite marquee — the ingredient / ethos strip on the welcome page. Pauses on hover. */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Custom scrollbar — thin gold thumb on dark track, matches brand. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-ink));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-gold-dark));
+  border: 2px solid rgb(var(--color-ink));
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-gold));
+}
+
+/* Drifting mist — two soft blurred blobs slowly crossing the hero. */
+.mist-layer {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  overflow: hidden;
+}
+.mist-layer span {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.12;
+}
+.mist-layer span:nth-child(1) {
+  width: 380px;
+  height: 380px;
+  background: rgb(var(--color-gold));
+  top: 10%;
+  left: -5%;
+  animation: mist-drift-a 22s ease-in-out infinite;
+}
+.mist-layer span:nth-child(2) {
+  width: 300px;
+  height: 300px;
+  background: rgb(var(--color-fern));
+  bottom: 5%;
+  right: -5%;
+  animation: mist-drift-b 26s ease-in-out infinite;
+}
+
+@keyframes mist-drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(60px, 30px); }
+}
+@keyframes mist-drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-50px, -25px); }
+}
+
+/* Floating petal — small ambient decoration for the hero. */
+.petal-float {
+  animation: petal-drift 9s ease-in-out infinite;
+}
+
+@keyframes petal-drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-18px) rotate(6deg); }
 }

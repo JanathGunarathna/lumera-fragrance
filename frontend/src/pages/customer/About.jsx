@@ -12,7 +12,7 @@ export default function About() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="uppercase text-xs tracking-widest2 text-gold/70 mb-3"
+            className="uppercase text-xs tracking-widest2 text-gold mb-3"
           >
             Our Story
           </m.p>
@@ -28,7 +28,7 @@ export default function About() {
       </section>
 
       <div className="max-w-5xl mx-auto px-6 py-20">
-        <Stagger className="grid md:grid-cols-2 gap-12 text-cream/70 leading-relaxed">
+        <Stagger className="grid md:grid-cols-2 gap-12 text-cream/90 leading-relaxed">
           <Reveal direction="left">
             <p>
               Lumera began with a single plant on a windowsill: a queen of the night
@@ -57,10 +57,10 @@ export default function About() {
               <m.div
                 whileHover={{ y: -4, borderColor: "rgba(198,161,91,0.5)" }}
                 transition={{ duration: 0.25 }}
-                className="border border-white/10 p-8 text-center h-full"
+                className="border border-white/10 bg-surface p-8 text-center h-full shadow-md shadow-black/30"
               >
                 <p className="font-display text-4xl text-gold mb-2">{item.stat}</p>
-                <p className="text-cream/50 text-sm uppercase tracking-widest">{item.label}</p>
+                <p className="text-muted text-sm uppercase tracking-widest">{item.label}</p>
               </m.div>
             </Reveal>
           ))}
@@ -70,7 +70,7 @@ export default function About() {
           <Reveal>
             <h2 className="font-display text-3xl text-cream mb-10">How We Work</h2>
           </Reveal>
-          <Stagger className="space-y-8 text-cream/70">
+          <Stagger className="space-y-8 text-cream/90">
             {[
               "We source raw materials directly from small growers, prioritizing botanicals over synthetics wherever the scent allows.",
               "Each formula is refined over months of blind testing before it ever reaches a bottle.",
@@ -93,7 +93,7 @@ export default function About() {
             "We're not trying to bottle a flower. We're trying to bottle the
             feeling of catching it at exactly the right hour."
           </p>
-          <p className="mt-6 text-cream/40 text-sm uppercase tracking-widest">
+          <p className="mt-6 text-muted2 text-sm uppercase tracking-widest">
             Founder, Lumera Fragrance
           </p>
         </Reveal>
