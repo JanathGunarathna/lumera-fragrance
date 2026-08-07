@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360">
+  <defs>
+    <g id="star">
+      <path d="M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z" fill="#C6A15B" />
+    </g>
+    <g id="sprig">
+      <path d="M0,0 C 10,-20 10,-40 0,-60" stroke="#C6A15B" stroke-width="1.4" fill="none" stroke-linecap="round" />
+      <path d="M0,-15 C -12,-22 -20,-18 -24,-10" stroke="#C6A15B" stroke-width="1.2" fill="none" stroke-linecap="round" />
+      <path d="M0,-30 C 14,-36 22,-32 26,-24" stroke="#C6A15B" stroke-width="1.2" fill="none" stroke-linecap="round" />
+      <path d="M0,-45 C -10,-50 -16,-48 -20,-42" stroke="#C6A15B" stroke-width="1.2" fill="none" stroke-linecap="round" />
+    </g>
+    <g id="crescent">
+      <path d="M0,-22 A22,22 0 1 0 0,22 A17,17 0 1 1 0,-22 Z" fill="#C6A15B" />
+    </g>
+  </defs>
+
+  <g opacity="0.55">
+    <use href="#crescent" transform="translate(60,60) scale(0.6)" />
+    <use href="#sprig" transform="translate(260,300) rotate(15)" />
+    <use href="#sprig" transform="translate(90,260) rotate(-8) scale(0.8)" />
+    <use href="#star" transform="translate(180,40) scale(1.4)" />
+    <use href="#star" transform="translate(300,120) scale(0.9)" />
+    <use href="#star" transform="translate(40,180) scale(1.1)" />
+    <use href="#star" transform="translate(230,220) scale(0.7)" />
+    <use href="#star" transform="translate(320,300) scale(1.2)" />
+    <use href="#star" transform="translate(130,320) scale(0.8)" />
+  </g>
+</svg>

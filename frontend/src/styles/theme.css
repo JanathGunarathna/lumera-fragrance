@@ -1,0 +1,70 @@
+/* ==========================================================================
+   LUMERA — THEME FILE
+   ==========================================================================
+   HOW TO CHANGE A COLOR: edit the hex code in the "YOUR COLORS" block
+   below (e.g. change --hex-gold: #C59B4A; to --hex-gold: #D4AF37;) and
+   the whole site updates — buttons, text, borders, glows, everything.
+
+   Nothing else in this file needs to be touched. The second block below
+   ("AUTO-GENERATED") is only there so Tailwind can do things like
+   bg-gold/40 (gold at 40% transparency) — it's the same colors as the
+   hex block, just split into R G B numbers, which is how Tailwind's
+   opacity trick works under the hood. If you edit a hex value, update
+   the matching line in that second block too (or just ask Claude to
+   change a color and it will keep both in sync for you).
+   ========================================================================== */
+
+:root {
+  /* ---------- YOUR COLORS — edit these ---------- */
+  --hex-ink:          #0A0908;  /* page background — near black, warm */
+  --hex-panel:        #120F0C;  /* section backgrounds */
+  --hex-surface:      #1B1610;  /* cards, elevated panels */
+  --hex-surface-2:    #261E14;  /* hover state for surface */
+
+  --hex-gold:         #C59B4A;  /* primary accent — deep gold */
+  --hex-gold-light:   #E3B85C;  /* accent hover / highlights */
+  --hex-gold-dark:    #8A682D;  /* accent shadows / borders */
+
+  --hex-yellow:       #F4C430;  /* secondary accent — bright yellow, used for glows/CTAs/badges */
+  --hex-yellow-light: #FFDB6E;
+  --hex-yellow-dark:  #BD8F19;
+
+  --hex-cream:        #F0E7D2;  /* primary text on dark */
+  --hex-muted:        #B0A48F;  /* secondary text */
+  --hex-muted2:       #766A58;  /* tertiary text / labels */
+  --hex-fern:         #7AA874;  /* success accent (kept for stock/status states) */
+
+  --hex-rose:         #C46980;  /* rarely-used decorative accent */
+  --hex-glass:        #FFFFFF;  /* used at low alpha for glass panels / glare */
+}
+
+/* ---------- AUTO-GENERATED — same colors as above, split into R G B ---------- */
+:root {
+  --color-ink: 10 9 8;
+  --color-panel: 18 15 12;
+  --color-surface: 27 22 16;
+  --color-surface-2: 38 30 20;
+
+  --color-gold: 197 155 74;
+  --color-gold-light: 227 184 92;
+  --color-gold-dark: 138 104 45;
+
+  --color-yellow: 244 196 48;
+  --color-yellow-light: 255 219 110;
+  --color-yellow-dark: 189 143 25;
+
+  --color-cream: 240 231 210;
+  --color-muted: 176 164 143;
+  --color-muted2: 118 106 88;
+  --color-fern: 122 168 116;
+
+  --color-rose: 196 105 128;
+  --color-glass: 255 255 255;
+}
+
+/* Shared, palette-independent tokens */
+:root {
+  --shadow-color: 0 0 0;
+  --radius-card: 4px;
+  --ease-lumera: cubic-bezier(0.22, 1, 0.36, 1);
+}
