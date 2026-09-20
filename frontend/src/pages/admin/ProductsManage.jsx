@@ -10,11 +10,33 @@ export default function ProductsManage() {
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [showForm, setShowForm] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const load = () => api.get('/admin/products').then(res => setProducts(res.data))
   useEffect(() => { load() }, [])
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value })
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const data = new FormData()
+    data.append('file', file)
+    setUploading(true)
+    try {
+      const res = await api.post('/admin/uploads/product-image', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setForm(current => ({ ...current, imageUrl: res.data.imageUrl }))
+      toast.success('Image uploaded')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not upload image')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
 
   const openNew = () => { setForm(emptyForm); setEditingId(null); setShowForm(true) }
   const openEdit = (p) => { setForm({ ...p, price: p.price, discountPrice: p.discountPrice || '' }); setEditingId(p.id); setShowForm(true) }
@@ -148,8 +170,12 @@ export default function ProductsManage() {
                     <input required type="number" className="form-control" value={form.stock} onChange={update('stock')} />
                   </div>
                   <div className="col-12">
-                    <label className="form-label small">Image URL</label>
-                    <input className="form-control" value={form.imageUrl} onChange={update('imageUrl')} placeholder="https://..." />
+                    <label className="form-label small">Product Image</label>
+                    <input type="file" className="form-control mb-2" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleImageUpload} disabled={uploading} />
+                    <div className="form-text mb-2">Upload an image from this computer (JPG, PNG, WEBP, or GIF; maximum 5 MB).</div>
+                    <input className="form-control" value={form.imageUrl} onChange={update('imageUrl')} placeholder="Or paste an image URL" />
+                    {uploading && <div className="form-text">Uploading image…</div>}
+                    {form.imageUrl && <img src={form.imageUrl} alt="Product preview" className="img-thumbnail mt-2" style={{ maxHeight: '120px', maxWidth: '160px' }} />}
                   </div>
                 </div>
                 <div className="modal-footer">

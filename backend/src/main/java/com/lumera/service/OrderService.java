@@ -5,6 +5,7 @@ import com.lumera.entity.*;
 import com.lumera.repository.CartItemRepository;
 import com.lumera.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
 
+    @Transactional
     public Order placeOrder(User user, OrderRequest req) {
         List<CartItem> cartItems = cartItemRepository.findByUser(user);
         if (cartItems.isEmpty()) {

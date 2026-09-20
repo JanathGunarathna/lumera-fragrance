@@ -36,7 +36,7 @@ public class AdminProductController {
     }
 
     @PatchMapping("/{id}/status")
-    public Product setStatus(@PathVariable Long id, @RequestParam boolean active) {
+    public Product setStatus(@PathVariable Long id, @RequestParam(name = "active") boolean active) {
         return productService.setActive(id, active);
     }
 }
