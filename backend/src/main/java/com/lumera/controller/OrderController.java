@@ -28,7 +28,11 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public Order getOrder(@PathVariable Long id) {
-        return orderService.getById(id);
+    public Order getOrder(@CurrentUser User user, @PathVariable Long id) {
+        Order order = orderService.getById(id);
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new SecurityException("You cannot view this order");
+        }
+        return order;
     }
 }

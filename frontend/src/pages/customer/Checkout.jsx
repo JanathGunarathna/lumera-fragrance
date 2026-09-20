@@ -5,6 +5,8 @@ import api from '../../api/axiosConfig'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 
+const SHIPPING_FEE = 8
+
 export default function Checkout() {
   const { user } = useAuth()
   const { items, cartTotal, refresh } = useCart()
@@ -12,21 +14,40 @@ export default function Checkout() {
   const [form, setForm] = useState({
     shippingAddress: user?.address || '',
     shippingPhone: user?.phone || '',
-    paymentMethod: 'CARD',
+    paymentMethod: 'PAYHERE',
   })
   const [submitting, setSubmitting] = useState(false)
+
+  const shippingFee = cartTotal >= 75 ? 0 : SHIPPING_FEE
+  const total = cartTotal + shippingFee
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.shippingAddress) { toast.error('Please add a shipping address'); return }
+
+    if (!form.shippingAddress.trim()) {
+      toast.error('Please add a shipping address')
+      return
+    }
+
+    if (!form.shippingPhone.trim()) {
+      toast.error('Please add a phone number')
+      return
+    }
+
     setSubmitting(true)
+
     try {
       const res = await api.post('/orders', form)
       await refresh()
-      toast.success('Order created — continue to payment')
-      navigate(`/payment/${res.data.id}`)
+
+      if (form.paymentMethod === 'COD') {
+        toast.success('Order placed successfully')
+        navigate('/orders')
+      } else {
+        navigate(`/payment/${res.data.id}`)
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not place order')
     } finally {
@@ -35,26 +56,36 @@ export default function Checkout() {
   }
 
   if (items.length === 0) {
-    return <div className="max-w-3xl mx-auto px-6 py-24 text-center text-cream/50">Your bag is empty. <a href="/products" className="text-gold">Browse fragrances</a>.</div>
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-24 text-center text-cream/50">
+        Your bag is empty. <a href="/products" className="text-gold">Browse fragrances</a>.
+      </div>
+    )
   }
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
       <h1 className="font-display text-4xl text-cream mb-10">Checkout</h1>
+
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Shipping Address</label>
+          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">
+            Shipping Address
+          </label>
           <textarea
             required
             value={form.shippingAddress}
             onChange={update('shippingAddress')}
             rows={3}
             className="w-full bg-panel border border-white/20 px-4 py-3 text-cream focus:border-gold outline-none"
-            placeholder="Street, city, state, ZIP"
+            placeholder="Street, city, district, postal code"
           />
         </div>
+
         <div>
-          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Phone Number</label>
+          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">
+            Phone Number
+          </label>
           <input
             required
             value={form.shippingPhone}
@@ -63,17 +94,41 @@ export default function Checkout() {
             placeholder="For delivery updates"
           />
         </div>
+
         <div>
-          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-3">Payment Method</label>
-          <div className="grid grid-cols-3 gap-3">
-            {['CARD', 'UPI', 'COD'].map(m => (
+          <label className="block text-xs uppercase tracking-widest text-cream/50 mb-3">
+            Payment Method
+          </label>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              {
+                value: 'PAYHERE',
+                title: 'PayHere',
+                description: 'Cards and supported PayHere payment methods',
+              },
+              {
+                value: 'COD',
+                title: 'Cash on Delivery',
+                description: 'Pay when your fragrance arrives',
+              },
+            ].map(method => (
               <button
                 type="button"
-                key={m}
-                onClick={() => setForm({ ...form, paymentMethod: m })}
-                className={`py-3 text-sm uppercase tracking-widest border ${form.paymentMethod === m ? 'bg-gold text-ink border-gold' : 'border-white/20 text-cream/70 hover:border-gold'}`}
+                key={method.value}
+                onClick={() => setForm({ ...form, paymentMethod: method.value })}
+                className={`text-left p-4 border transition-colors ${
+                  form.paymentMethod === method.value
+                    ? 'bg-gold/10 border-gold'
+                    : 'border-white/20 hover:border-gold/60'
+                }`}
               >
-                {m === 'COD' ? 'Cash on Delivery' : m}
+                <span className="block text-sm uppercase tracking-widest text-cream">
+                  {method.title}
+                </span>
+                <span className="block text-xs text-cream/40 mt-1">
+                  {method.description}
+                </span>
               </button>
             ))}
           </div>
@@ -81,10 +136,18 @@ export default function Checkout() {
 
         <div className="bg-panel border border-white/10 p-6">
           <div className="flex justify-between text-cream/70 text-sm mb-2">
-            <span>Subtotal</span><span>${cartTotal.toFixed(2)}</span>
+            <span>Subtotal</span>
+            <span>${cartTotal.toFixed(2)}</span>
           </div>
+
+          <div className="flex justify-between text-cream/70 text-sm mb-3">
+            <span>Shipping</span>
+            <span>{shippingFee === 0 ? 'Free' : `$${shippingFee.toFixed(2)}`}</span>
+          </div>
+
           <div className="flex justify-between text-cream font-medium border-t border-white/10 pt-3">
-            <span>Total</span><span>${(cartTotal + (cartTotal >= 75 ? 0 : 8)).toFixed(2)}</span>
+            <span>Total</span>
+            <span>${total.toFixed(2)}</span>
           </div>
         </div>
 
@@ -93,7 +156,11 @@ export default function Checkout() {
           disabled={submitting}
           className="w-full bg-gold text-ink uppercase text-xs tracking-widest py-4 hover:bg-gold-light transition-colors disabled:opacity-50"
         >
-          {submitting ? 'Placing order…' : 'Place Order'}
+          {submitting
+            ? 'Processing…'
+            : form.paymentMethod === 'PAYHERE'
+              ? 'Continue to PayHere'
+              : 'Place Cash on Delivery Order'}
         </button>
       </form>
     </div>

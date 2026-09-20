@@ -12,6 +12,7 @@ import ProductDetail from './pages/customer/ProductDetail'
 import Cart from './pages/customer/Cart'
 import Checkout from './pages/customer/Checkout'
 import Payment from './pages/customer/Payment'
+import PaymentResult from './pages/customer/PaymentResult'
 import Login from './pages/customer/Login'
 import Register from './pages/customer/Register'
 import Profile from './pages/customer/Profile'
@@ -55,6 +56,8 @@ export default function App() {
       <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
       <Route path="/checkout" element={<CustomerLayout><ProtectedRoute><Checkout /></ProtectedRoute></CustomerLayout>} />
       <Route path="/payment/:orderId" element={<CustomerLayout><ProtectedRoute><Payment /></ProtectedRoute></CustomerLayout>} />
+      <Route path="/payment/success" element={<CustomerLayout><PaymentResult /></CustomerLayout>} />
+      <Route path="/payment/cancel" element={<CustomerLayout><PaymentResult cancelled /></CustomerLayout>} />
       <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
       <Route path="/register" element={<CustomerLayout><Register /></CustomerLayout>} />
       <Route path="/profile" element={<CustomerLayout><ProtectedRoute><Profile /></ProtectedRoute></CustomerLayout>} />

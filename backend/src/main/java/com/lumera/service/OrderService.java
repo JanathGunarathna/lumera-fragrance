@@ -44,9 +44,14 @@ public class OrderService {
             order.getItems().add(oi);
             total = total.add(unitPrice.multiply(BigDecimal.valueOf(ci.getQuantity())));
         }
-        order.setTotalAmount(total);
+        // Keep the payable amount authoritative on the server.
+        // Orders below $75 have an $8 shipping fee; orders at/above $75 ship free.
+        BigDecimal shippingFee = total.compareTo(new BigDecimal("75.00")) >= 0
+                ? BigDecimal.ZERO
+                : new BigDecimal("8.00");
+        order.setTotalAmount(total.add(shippingFee));
 
-        // COD orders start PENDING/UNPAID; card/UPI orders are marked paid once /api/payments/pay succeeds
+        // COD orders start PENDING/UNPAID; PayHere orders are paid after the verified gateway callback.
         Order saved = orderRepository.save(order);
         cartItemRepository.deleteByUser(user);
         return saved;
@@ -71,11 +76,44 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    public Order save(Order order) {
+        return orderRepository.save(order);
+    }
+
     public Order markPaid(Long orderId, String paymentMethod) {
+        return markPaidFromGateway(orderId, paymentMethod, null);
+    }
+
+    public Order markPaidFromGateway(Long orderId, String paymentMethod, String paymentId) {
         Order order = getById(orderId);
+
+        if ("PAID".equalsIgnoreCase(order.getPaymentStatus())) {
+            return order;
+        }
+
         order.setPaymentStatus("PAID");
         order.setPaymentMethod(paymentMethod);
         order.setStatus(OrderStatus.PAID);
+
+        if (paymentId != null && !paymentId.isBlank()) {
+            order.setTransactionRef("PH-" + paymentId);
+        }
+
+        return orderRepository.save(order);
+    }
+
+    public Order markPaymentPending(Long orderId) {
+        Order order = getById(orderId);
+        order.setPaymentStatus("PENDING");
+        return orderRepository.save(order);
+    }
+
+    public Order markPaymentFailed(Long orderId) {
+        Order order = getById(orderId);
+        if (!"PAID".equalsIgnoreCase(order.getPaymentStatus())) {
+            order.setPaymentStatus("FAILED");
+            order.setStatus(OrderStatus.PENDING);
+        }
         return orderRepository.save(order);
     }
 }

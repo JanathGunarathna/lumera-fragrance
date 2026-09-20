@@ -10,9 +10,21 @@ SELECT 'Lumera Admin', 'admin@lumera.com',
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@lumera.com');
 
 INSERT INTO products (name, brand, category, gender, description, price, discount_price, stock, image_url, volume, active, created_at, updated_at)
-VALUES
-('Nocturne Bloom', 'Lumera', 'Eau de Parfum', 'Women', 'A moonlit bouquet of night-blooming jasmine, white musk and cedar.', 89.00, 74.00, 40, '', '50ml', 1, NOW(), NOW()),
-('Velvet Oud', 'Lumera', 'Eau de Parfum', 'Unisex', 'Smoky oud wrapped in rose and amber for a bold evening presence.', 129.00, NULL, 25, '', '100ml', 1, NOW(), NOW()),
-('Citrus Reverie', 'Lumera', 'Eau de Toilette', 'Men', 'Bright bergamot and sicilian lemon over a base of vetiver.', 65.00, NULL, 60, '', '100ml', 1, NOW(), NOW()),
-('Golden Dusk', 'Lumera', 'Eau de Parfum', 'Women', 'Warm amber, vanilla orchid and sandalwood for a radiant finish.', 95.00, 80.00, 30, '', '50ml', 1, NOW(), NOW()),
-('Silver Fern', 'Lumera', 'Eau de Toilette', 'Men', 'Crisp green fern with a whisper of iris and driftwood.', 70.00, NULL, 45, '', '100ml', 1, NOW(), NOW());
+SELECT 'Nocturne Bloom', 'Lumera', 'Eau de Parfum', 'Women', 'A moonlit bouquet of night-blooming jasmine, white musk and cedar.', 89.00, 74.00, 40, '', '50ml', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Nocturne Bloom');
+
+INSERT INTO products (name, brand, category, gender, description, price, discount_price, stock, image_url, volume, active, created_at, updated_at)
+SELECT 'Velvet Oud', 'Lumera', 'Eau de Parfum', 'Unisex', 'Smoky oud wrapped in rose and amber for a bold evening presence.', 129.00, NULL, 25, '', '100ml', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Velvet Oud');
+
+INSERT INTO products (name, brand, category, gender, description, price, discount_price, stock, image_url, volume, active, created_at, updated_at)
+SELECT 'Citrus Reverie', 'Lumera', 'Eau de Toilette', 'Men', 'Bright bergamot and sicilian lemon over a base of vetiver.', 65.00, NULL, 60, '', '100ml', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Citrus Reverie');
+
+INSERT INTO products (name, brand, category, gender, description, price, discount_price, stock, image_url, volume, active, created_at, updated_at)
+SELECT 'Golden Dusk', 'Lumera', 'Eau de Parfum', 'Women', 'Warm amber, vanilla orchid and sandalwood for a radiant finish.', 95.00, 80.00, 30, '', '50ml', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Golden Dusk');
+
+INSERT INTO products (name, brand, category, gender, description, price, discount_price, stock, image_url, volume, active, created_at, updated_at)
+SELECT 'Silver Fern', 'Lumera', 'Eau de Toilette', 'Men', 'Crisp green fern with a whisper of iris and driftwood.', 70.00, NULL, 45, '', '100ml', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Silver Fern');

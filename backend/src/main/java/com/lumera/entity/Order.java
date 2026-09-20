@@ -44,7 +44,7 @@ public class Order {
     private OrderStatus status = OrderStatus.PENDING;
 
     @Column(length = 30)
-    private String paymentMethod; // CARD, UPI, COD
+    private String paymentMethod; // PAYHERE, COD
 
     @Column(length = 30)
     private String paymentStatus = "UNPAID"; // UNPAID, PAID, FAILED, REFUNDED

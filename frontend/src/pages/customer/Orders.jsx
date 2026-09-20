@@ -54,9 +54,9 @@ export default function Orders() {
                   </div>
                 ))}
               </div>
-              {order.paymentStatus === 'UNPAID' && order.paymentMethod !== 'COD' && (
+              {['UNPAID', 'FAILED', 'PENDING'].includes(order.paymentStatus) && order.paymentMethod === 'PAYHERE' && (
                 <Link to={`/payment/${order.id}`} className="inline-block mt-4 text-xs text-gold hover:underline uppercase tracking-widest">
-                  Complete Payment →
+                  Pay with PayHere →
                 </Link>
               )}
             </div>
