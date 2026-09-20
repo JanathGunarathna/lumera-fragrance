@@ -2,8 +2,12 @@ package com.lumera.service;
 
 import com.lumera.dto.ProductRequest;
 import com.lumera.entity.Product;
+import com.lumera.repository.CartItemRepository;
+import com.lumera.repository.FeedbackRepository;
+import com.lumera.repository.OrderItemRepository;
 import com.lumera.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +17,9 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CartItemRepository cartItemRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final OrderItemRepository orderItemRepository;
 
     public List<Product> getAllActive() {
         return productRepository.findByActiveTrue();
@@ -47,10 +54,21 @@ public class ProductService {
         return productRepository.save(p);
     }
 
-    public void delete(Long id) {
+    public Product setActive(Long id, boolean active) {
         Product p = getById(id);
-        p.setActive(false); // soft delete keeps order history intact
-        productRepository.save(p);
+        p.setActive(active);
+        return productRepository.save(p);
+    }
+
+    @Transactional
+    public void deletePermanently(Long id) {
+        Product p = getById(id);
+        if (orderItemRepository.countByProduct(p) > 0) {
+            throw new IllegalStateException("This product cannot be deleted because it is part of an order. Deactivate it instead.");
+        }
+        cartItemRepository.deleteByProduct(p);
+        feedbackRepository.deleteByProduct(p);
+        productRepository.delete(p);
     }
 
     private void applyRequest(Product p, ProductRequest req) {

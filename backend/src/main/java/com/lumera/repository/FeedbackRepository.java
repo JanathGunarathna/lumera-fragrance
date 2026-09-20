@@ -10,4 +10,5 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findByProductAndApprovedTrueOrderByCreatedAtDesc(Product product);
     List<Feedback> findByProductIsNullAndApprovedTrueOrderByCreatedAtDesc();
     List<Feedback> findAllByOrderByCreatedAtDesc();
+    void deleteByProduct(Product product);
 }

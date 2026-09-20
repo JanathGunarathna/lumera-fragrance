@@ -43,10 +43,24 @@ export default function ProductsManage() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Deactivate this product? It will be hidden from the store.')) return
-    await api.delete(`/admin/products/${id}`)
-    toast.info('Product deactivated')
-    load()
+    if (!confirm('Permanently delete this product? This cannot be undone.')) return
+    try {
+      await api.delete(`/admin/products/${id}`)
+      toast.success('Product deleted')
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not delete product')
+    }
+  }
+
+  const handleStatus = async (product) => {
+    try {
+      await api.patch(`/admin/products/${product.id}/status`, null, { params: { active: !product.active } })
+      toast.info(product.active ? 'Product deactivated' : 'Product activated')
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not change product status')
+    }
   }
 
   return (
@@ -72,7 +86,8 @@ export default function ProductsManage() {
                   <td><span className={`badge ${p.active ? 'bg-success' : 'bg-secondary'}`}>{p.active ? 'Active' : 'Inactive'}</span></td>
                   <td className="text-end">
                     <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => openEdit(p)}>Edit</button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(p.id)}>Deactivate</button>
+                    <button className="btn btn-sm btn-outline-warning me-2" onClick={() => handleStatus(p)}>{p.active ? 'Deactivate' : 'Activate'}</button>
+                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(p.id)}>Delete</button>
                   </td>
                 </tr>
               ))}

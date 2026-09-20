@@ -32,6 +32,11 @@ public class AdminProductController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        productService.delete(id);
+        productService.deletePermanently(id);
+    }
+
+    @PatchMapping("/{id}/status")
+    public Product setStatus(@PathVariable Long id, @RequestParam boolean active) {
+        return productService.setActive(id, active);
     }
 }

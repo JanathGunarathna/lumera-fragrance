@@ -1,6 +1,7 @@
 package com.lumera.repository;
 
 import com.lumera.entity.CartItem;
+import com.lumera.entity.Product;
 import com.lumera.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,5 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     List<CartItem> findByUser(User user);
     Optional<CartItem> findByUserAndProductId(User user, Long productId);
     void deleteByUser(User user);
+    void deleteByProduct(Product product);
 }
