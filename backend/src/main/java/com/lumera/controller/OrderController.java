@@ -3,6 +3,7 @@ package com.lumera.controller;
 import com.lumera.dto.OrderRequest;
 import com.lumera.entity.Order;
 import com.lumera.entity.User;
+import com.lumera.dto.OrderCreatedResponse;
 import com.lumera.security.CurrentUser;
 import com.lumera.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public Order placeOrder(@CurrentUser User user, @RequestBody OrderRequest req) {
-        return orderService.placeOrder(user, req);
+    public OrderCreatedResponse placeOrder(@CurrentUser User user, @RequestBody OrderRequest req) {
+        return OrderCreatedResponse.from(orderService.placeOrder(user, req));
     }
 
     @GetMapping("/my")

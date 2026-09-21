@@ -155,6 +155,8 @@ public class PaymentController {
 
         order.setPaymentSlipUrl("/uploads/payment-slips/" + filename);
         order.setPaymentStatus("PENDING");
-        return orderService.save(order);
+        Order saved = orderService.save(order);
+        orderService.clearCart(user);
+        return saved;
     }
 }

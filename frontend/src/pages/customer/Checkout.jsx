@@ -54,22 +54,29 @@ export default function Checkout() {
 
     try {
       const res = await api.post('/orders', form)
+      const orderId = res.data?.id ?? res.data?.orderId
+      if (!orderId) {
+        throw new Error('Order was created without an order ID')
+      }
       await refresh()
 
       if (form.paymentMethod === 'BANK_TRANSFER') {
         const data = new FormData()
         data.append('file', paymentSlip)
-        await api.post(`/payments/slip/${res.data.id}`, data)
+        await api.post(`/payments/slip/${orderId}`, data)
         toast.success('Order placed and payment slip submitted')
         navigate('/', { replace: true })
       } else if (form.paymentMethod === 'COD') {
         toast.success('Order placed successfully')
         navigate('/', { replace: true })
       } else {
-        navigate(`/payment/${res.data.id}`)
+        navigate(`/payment/${orderId}`)
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not place order')
+      console.error('Unable to place order:', err)
+      const message = err.response?.data?.message
+        || (err.response ? `Order could not be placed (HTTP ${err.response.status})` : 'Could not reach the order service')
+      toast.error(message)
     } finally {
       setSubmitting(false)
     }

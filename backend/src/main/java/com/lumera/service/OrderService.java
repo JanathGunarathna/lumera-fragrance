@@ -58,8 +58,15 @@ public class OrderService {
 
         // COD orders start PENDING/UNPAID; PayHere orders are paid after the verified gateway callback.
         Order saved = orderRepository.save(order);
-        cartItemRepository.deleteByUser(user);
+        if (!"BANK_TRANSFER".equals(order.getPaymentMethod())) {
+            cartItemRepository.deleteByUser(user);
+        }
         return saved;
+    }
+
+    @Transactional
+    public void clearCart(User user) {
+        cartItemRepository.deleteByUser(user);
     }
 
     public List<Order> getUserOrders(User user) {

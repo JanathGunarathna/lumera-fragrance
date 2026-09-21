@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../api/axiosConfig'
 import AdminLayout from '../../components/admin/AdminLayout'
@@ -18,13 +18,13 @@ export default function OrdersManage() {
         ? res.data
         : res.data?.orders ?? res.data?.content ?? res.data?.data
       if (!Array.isArray(orderList)) {
-        throw new Error('The orders response was not a list')
+        throw new Error(res.data?.message || 'The orders response was not a list')
       }
       setOrders(orderList)
     } catch (err) {
       console.error('Unable to load orders:', err)
       setOrders([])
-      setError('Unable to load orders. Please refresh and try again.')
+      setError(err.response?.data?.message || err.message || 'Unable to load orders. Please refresh and try again.')
     }
   }
   useEffect(() => { load() }, [])
@@ -51,7 +51,7 @@ export default function OrdersManage() {
             </thead>
             <tbody>
               {orders.map(o => (
-                <>
+                <Fragment key={o.id}>
                   <tr key={o.id}>
                     <td>#{o.id} <span className="text-muted small d-block">{o.transactionRef}</span></td>
                     <td>{o.customerName || o.user?.fullName}<span className="text-muted small d-block">{o.customerEmail || o.user?.email}</span></td>
@@ -82,7 +82,7 @@ export default function OrdersManage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
