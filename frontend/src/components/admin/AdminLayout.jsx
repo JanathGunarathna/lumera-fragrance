@@ -6,6 +6,7 @@ const links = [
   { to: '/admin/products', label: 'Products', icon: 'bi-box-seam' },
   { to: '/admin/orders', label: 'Orders', icon: 'bi-receipt' },
   { to: '/admin/feedback', label: 'Feedback', icon: 'bi-chat-square-text' },
+  { to: '/admin/messages', label: 'Messages', icon: 'bi-envelope' },
   { to: '/admin/users', label: 'Customers', icon: 'bi-people' },
 ]
 

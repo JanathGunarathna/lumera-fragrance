@@ -8,8 +8,25 @@ const statuses = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANC
 export default function OrdersManage() {
   const [orders, setOrders] = useState([])
   const [expanded, setExpanded] = useState(null)
+  const [error, setError] = useState('')
 
-  const load = () => api.get('/admin/orders').then(res => setOrders(res.data))
+  const load = async () => {
+    try {
+      setError('')
+      const res = await api.get('/admin/orders')
+      const orderList = Array.isArray(res.data)
+        ? res.data
+        : res.data?.orders ?? res.data?.content ?? res.data?.data
+      if (!Array.isArray(orderList)) {
+        throw new Error('The orders response was not a list')
+      }
+      setOrders(orderList)
+    } catch (err) {
+      console.error('Unable to load orders:', err)
+      setOrders([])
+      setError('Unable to load orders. Please refresh and try again.')
+    }
+  }
   useEffect(() => { load() }, [])
 
   const handleStatusChange = async (id, status) => {
@@ -25,6 +42,7 @@ export default function OrdersManage() {
   return (
     <AdminLayout>
       <h2 className="mb-4">Orders</h2>
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
       <div className="card shadow-sm">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
@@ -36,7 +54,7 @@ export default function OrdersManage() {
                 <>
                   <tr key={o.id}>
                     <td>#{o.id} <span className="text-muted small d-block">{o.transactionRef}</span></td>
-                    <td>{o.user?.fullName}<span className="text-muted small d-block">{o.user?.email}</span></td>
+                    <td>{o.customerName || o.user?.fullName}<span className="text-muted small d-block">{o.customerEmail || o.user?.email}</span></td>
                     <td>${o.totalAmount}</td>
                     <td><span className={`badge ${o.paymentStatus === 'PAID' ? 'bg-success' : 'bg-warning text-dark'}`}>{o.paymentStatus}</span></td>
                     <td style={{ minWidth: 160 }}>
@@ -55,6 +73,8 @@ export default function OrdersManage() {
                       <td colSpan={6} className="bg-light">
                         <div className="p-2">
                           <p className="mb-1 small"><strong>Ship to:</strong> {o.shippingAddress} ({o.shippingPhone})</p>
+                          {o.alternatePhone && <p className="mb-1 small"><strong>Alternative phone:</strong> {o.alternatePhone}</p>}
+                          {o.paymentSlipUrl && <p className="mb-1 small"><strong>Payment slip:</strong> <a href={o.paymentSlipUrl} target="_blank" rel="noreferrer">View uploaded slip</a></p>}
                           <ul className="mb-0 small">
                             {o.items.map(i => <li key={i.id}>{i.productName} × {i.quantity} — ${i.unitPrice}</li>)}
                           </ul>

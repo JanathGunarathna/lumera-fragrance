@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { FiShoppingBag, FiUser, FiMenu, FiX } from 'react-icons/fi'
+import { FiShoppingBag, FiMenu, FiX } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 
@@ -14,7 +14,7 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, logout } = useAuth()
   const { cartCount } = useCart()
   const navigate = useNavigate()
 
@@ -50,17 +50,15 @@ export default function Navbar() {
 
           {isAuthenticated ? (
             <div className="hidden md:flex items-center gap-4">
-              <Link to="/profile" className="text-cream/80 hover:text-gold text-sm flex items-center gap-1">
-                <FiUser /> {user.fullName?.split(' ')[0]}
-              </Link>
               <button onClick={() => { logout(); navigate('/') }} className="text-sm text-cream/60 hover:text-gold">
                 Sign out
               </button>
             </div>
           ) : (
-            <Link to="/login" className="hidden md:inline-block text-sm uppercase tracking-widest text-cream/80 hover:text-gold">
-              Sign in
-            </Link>
+            <div className="hidden md:flex items-center gap-4 text-sm uppercase tracking-widest">
+              <Link to="/login" className="text-cream/80 hover:text-gold">Sign in</Link>
+              <Link to="/register" className="border border-gold/60 px-3 py-2 text-gold hover:bg-gold hover:text-ink">Sign up</Link>
+            </div>
           )}
 
           <button className="md:hidden text-cream" onClick={() => setOpen(!open)} aria-label="Toggle menu">
@@ -82,7 +80,10 @@ export default function Navbar() {
               <button onClick={() => { logout(); setOpen(false); navigate('/') }} className="text-left text-cream/60 hover:text-gold">Sign out</button>
             </>
           ) : (
-            <Link to="/login" onClick={() => setOpen(false)} className="text-cream/80 hover:text-gold">Sign in</Link>
+            <>
+              <Link to="/login" onClick={() => setOpen(false)} className="text-cream/80 hover:text-gold">Sign in</Link>
+              <Link to="/register" onClick={() => setOpen(false)} className="text-cream/80 hover:text-gold">Sign up</Link>
+            </>
           )}
         </div>
       )}

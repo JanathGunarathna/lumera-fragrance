@@ -30,6 +30,9 @@ public class OrderService {
         order.setUser(user);
         order.setShippingAddress(req.getShippingAddress());
         order.setShippingPhone(req.getShippingPhone());
+        order.setAlternatePhone(req.getAlternatePhone());
+        order.setCustomerName(req.getCustomerName());
+        order.setCustomerEmail(req.getCustomerEmail());
         order.setPaymentMethod(req.getPaymentMethod());
         order.setTransactionRef("LUM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 

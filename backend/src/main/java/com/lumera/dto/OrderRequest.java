@@ -6,5 +6,8 @@ import lombok.Data;
 public class OrderRequest {
     private String shippingAddress;
     private String shippingPhone;
-    private String paymentMethod; // PAYHERE, COD
+    private String alternatePhone;
+    private String customerName;
+    private String customerEmail;
+    private String paymentMethod; // PAYHERE, COD, BANK_TRANSFER
 }

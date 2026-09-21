@@ -26,6 +26,7 @@ import ProductsManage from './pages/admin/ProductsManage'
 import OrdersManage from './pages/admin/OrdersManage'
 import FeedbackManage from './pages/admin/FeedbackManage'
 import UsersManage from './pages/admin/UsersManage'
+import ContactMessagesManage from './pages/admin/ContactMessagesManage'
 
 function CustomerLayout({ children }) {
   return (
@@ -47,6 +48,7 @@ export default function App() {
       <Route path="/admin/orders" element={<AdminProtectedRoute><OrdersManage /></AdminProtectedRoute>} />
       <Route path="/admin/feedback" element={<AdminProtectedRoute><FeedbackManage /></AdminProtectedRoute>} />
       <Route path="/admin/users" element={<AdminProtectedRoute><UsersManage /></AdminProtectedRoute>} />
+      <Route path="/admin/messages" element={<AdminProtectedRoute><ContactMessagesManage /></AdminProtectedRoute>} />
 
       {/* Customer-facing storefront — Tailwind-driven */}
       <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />

@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
+import api from '../../api/axiosConfig'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    try {
+      await api.post('/contact-messages', form)
     toast.success('Message sent — we\'ll reply within 1 business day')
     setForm({ name: '', email: '', message: '' })
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not send your message')
+    }
   }
 
   return (

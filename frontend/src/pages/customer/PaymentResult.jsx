@@ -1,8 +1,11 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 export default function PaymentResult({ cancelled = false }) {
-  const [params] = useSearchParams()
-  const orderId = params.get('orderId')
+  useEffect(() => {
+    if (!cancelled) toast.success('Order placed successfully')
+  }, [cancelled])
 
   return (
     <div className="max-w-xl mx-auto px-6 py-24 text-center">
@@ -21,10 +24,10 @@ export default function PaymentResult({ cancelled = false }) {
 
         <div className="flex justify-center gap-4 mt-8">
           <Link
-            to={orderId ? `/orders` : '/products'}
+            to="/"
             className="bg-gold text-ink px-7 py-3 uppercase text-xs tracking-widest"
           >
-            {orderId ? 'View my orders' : 'Continue shopping'}
+            Back to home
           </Link>
           <Link
             to="/products"

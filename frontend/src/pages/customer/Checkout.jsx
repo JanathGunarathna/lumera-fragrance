@@ -12,10 +12,14 @@ export default function Checkout() {
   const { items, cartTotal, refresh } = useCart()
   const navigate = useNavigate()
   const [form, setForm] = useState({
+    customerName: user?.fullName || '',
+    customerEmail: user?.email || '',
     shippingAddress: user?.address || '',
     shippingPhone: user?.phone || '',
+    alternatePhone: '',
     paymentMethod: 'PAYHERE',
   })
+  const [paymentSlip, setPaymentSlip] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
   const shippingFee = cartTotal >= 75 ? 0 : SHIPPING_FEE
@@ -31,8 +35,18 @@ export default function Checkout() {
       return
     }
 
+    if (!form.customerName.trim() || !form.customerEmail.trim()) {
+      toast.error('Please add your name and email address')
+      return
+    }
+
     if (!form.shippingPhone.trim()) {
       toast.error('Please add a phone number')
+      return
+    }
+
+    if (form.paymentMethod === 'BANK_TRANSFER' && !paymentSlip) {
+      toast.error('Please upload your payment slip')
       return
     }
 
@@ -42,9 +56,15 @@ export default function Checkout() {
       const res = await api.post('/orders', form)
       await refresh()
 
-      if (form.paymentMethod === 'COD') {
+      if (form.paymentMethod === 'BANK_TRANSFER') {
+        const data = new FormData()
+        data.append('file', paymentSlip)
+        await api.post(`/payments/slip/${res.data.id}`, data)
+        toast.success('Order placed and payment slip submitted')
+        navigate('/', { replace: true })
+      } else if (form.paymentMethod === 'COD') {
         toast.success('Order placed successfully')
-        navigate('/orders')
+        navigate('/', { replace: true })
       } else {
         navigate(`/payment/${res.data.id}`)
       }
@@ -68,7 +88,18 @@ export default function Checkout() {
       <h1 className="font-display text-4xl text-cream mb-10">Checkout</h1>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div>
+        <div className="grid md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Customer Name</label>
+            <input required value={form.customerName} onChange={update('customerName')} className="w-full bg-panel border border-white/20 px-4 py-3 text-cream focus:border-gold outline-none" />
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Email Address</label>
+            <input required type="email" value={form.customerEmail} onChange={update('customerEmail')} className="w-full bg-panel border border-white/20 px-4 py-3 text-cream focus:border-gold outline-none" />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-5">
+          <div>
           <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">
             Shipping Address
           </label>
@@ -93,6 +124,11 @@ export default function Checkout() {
             className="w-full bg-panel border border-white/20 px-4 py-3 text-cream focus:border-gold outline-none"
             placeholder="For delivery updates"
           />
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Alternative Phone Number <span className="normal-case">(optional)</span></label>
+            <input value={form.alternatePhone} onChange={update('alternatePhone')} className="w-full bg-panel border border-white/20 px-4 py-3 text-cream focus:border-gold outline-none" placeholder="Backup contact number" />
+          </div>
         </div>
 
         <div>
@@ -111,6 +147,11 @@ export default function Checkout() {
                 value: 'COD',
                 title: 'Cash on Delivery',
                 description: 'Pay when your fragrance arrives',
+              },
+              {
+                value: 'BANK_TRANSFER',
+                title: 'Bank Transfer',
+                description: 'Upload your bank-transfer payment slip',
               },
             ].map(method => (
               <button
@@ -132,6 +173,13 @@ export default function Checkout() {
               </button>
             ))}
           </div>
+          {form.paymentMethod === 'BANK_TRANSFER' && (
+            <div className="mt-5 border border-white/20 p-4">
+              <label className="block text-xs uppercase tracking-widest text-cream/50 mb-2">Payment Slip</label>
+              <input required type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e => setPaymentSlip(e.target.files?.[0] || null)} className="block w-full text-sm text-cream/70" />
+              <p className="text-xs text-cream/40 mt-2">Upload a JPG, PNG, WEBP, or PDF receipt. Your payment will be reviewed by Lumera.</p>
+            </div>
+          )}
         </div>
 
         <div className="bg-panel border border-white/10 p-6">
@@ -160,7 +208,9 @@ export default function Checkout() {
             ? 'Processing…'
             : form.paymentMethod === 'PAYHERE'
               ? 'Continue to PayHere'
-              : 'Place Cash on Delivery Order'}
+              : form.paymentMethod === 'BANK_TRANSFER'
+                ? 'Place Order and Submit Slip'
+                : 'Place Cash on Delivery Order'}
         </button>
       </form>
     </div>

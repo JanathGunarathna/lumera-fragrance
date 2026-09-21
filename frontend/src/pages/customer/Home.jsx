@@ -34,11 +34,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative aspect-square flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-gold/5 blur-3xl" aria-hidden="true" />
-            <div className="relative w-full h-full border border-gold/20 rounded-full flex items-center justify-center">
-              <span className="font-display text-[10rem] md:text-[13rem] text-gold leading-none select-none">L</span>
-            </div>
+          <div className="relative aspect-square overflow-hidden border border-gold/20">
+            <img src="/images/lumera-hero.png" alt="Lumera Fragrance flower emblem" className="w-full h-full object-cover" />
           </div>
         </div>
       </section>

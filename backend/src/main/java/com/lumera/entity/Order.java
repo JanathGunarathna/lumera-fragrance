@@ -39,6 +39,18 @@ public class Order {
     @Column(length = 20)
     private String shippingPhone;
 
+    @Column(length = 20)
+    private String alternatePhone;
+
+    @Column(length = 100)
+    private String customerName;
+
+    @Column(length = 150)
+    private String customerEmail;
+
+    @Column(length = 500)
+    private String paymentSlipUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.PENDING;

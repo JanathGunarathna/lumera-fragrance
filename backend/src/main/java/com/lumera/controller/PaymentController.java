@@ -7,9 +7,18 @@ import com.lumera.security.CurrentUser;
 import com.lumera.service.OrderService;
 import com.lumera.service.PayHereService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -18,6 +27,9 @@ public class PaymentController {
 
     private final OrderService orderService;
     private final PayHereService payHereService;
+
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
     /**
      * Creates the server-generated PayHere checkout payload.
@@ -108,5 +120,41 @@ public class PaymentController {
     public ApiResponse legacyPaymentEndpoint() {
         return new ApiResponse(false,
                 "Card payments now use the secure PayHere checkout. Please update the frontend.");
+    }
+
+    @PostMapping(value = "/slip/{orderId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Order uploadPaymentSlip(@CurrentUser User user, @PathVariable Long orderId,
+                                   @RequestParam("file") MultipartFile file) throws IOException {
+        Order order = orderService.getById(orderId);
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new SecurityException("You cannot upload a slip for this order");
+        }
+        if (!"BANK_TRANSFER".equals(order.getPaymentMethod())) {
+            throw new IllegalStateException("Payment slips are only accepted for bank transfers");
+        }
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Choose a payment slip to upload");
+        }
+
+        String contentType = file.getContentType();
+        if (!Set.of("image/jpeg", "image/png", "image/webp", "application/pdf").contains(contentType)) {
+            throw new IllegalArgumentException("Upload a JPG, PNG, WEBP, or PDF payment slip");
+        }
+        String extension = switch (contentType) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            case "application/pdf" -> ".pdf";
+            default -> throw new IllegalArgumentException("Unsupported payment slip format");
+        };
+
+        Path paymentSlipDir = Path.of(uploadDir, "payment-slips").toAbsolutePath().normalize();
+        Files.createDirectories(paymentSlipDir);
+        String filename = UUID.randomUUID() + extension;
+        Files.copy(file.getInputStream(), paymentSlipDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+
+        order.setPaymentSlipUrl("/uploads/payment-slips/" + filename);
+        order.setPaymentStatus("PENDING");
+        return orderService.save(order);
     }
 }
