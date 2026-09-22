@@ -1,9 +1,9 @@
 package com.lumera.dto;
 
+import java.math.BigDecimal;
+
 import com.lumera.entity.Order;
 import com.lumera.entity.OrderStatus;
-
-import java.math.BigDecimal;
 
 public record OrderCreatedResponse(
         Long id,
