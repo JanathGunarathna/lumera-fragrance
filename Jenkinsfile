@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'docker' }
+    agent any
 
     options {
         timestamps()
@@ -24,8 +24,6 @@ pipeline {
                 sh '''
                     set -eu
                     docker --version
-                    docker compose version
-                    docker compose config --quiet
                 '''
             }
         }
