@@ -40,51 +40,65 @@ pipeline {
             }
         }
 
-        stage('Start MySQL') {
-            steps {
-                sh '''
-                    set -eu
+        
+stage('Start MySQL') {
+    steps {
+        sh '''
+            set -eu
 
-                    docker network create "$CI_NETWORK"
-                    docker volume create "$MYSQL_VOLUME"
+            echo "Cleaning up leftover CI resources..."
+            docker rm -f "$MYSQL_CONTAINER" 2>/dev/null || true
+            docker network rm "$CI_NETWORK" 2>/dev/null || true
 
-                    docker run -d \
-                      --name "$MYSQL_CONTAINER" \
-                      --network "$CI_NETWORK" \
-                      --network-alias mysql \
-                      --restart no \
-                      -e MYSQL_DATABASE=lumera_db \
-                      -e MYSQL_USER="$DB_USERNAME" \
-                      -e MYSQL_PASSWORD="$DB_PASSWORD" \
-                      -e MYSQL_ROOT_PASSWORD="$DB_ROOT_PASSWORD" \
-                      --mount "source=$MYSQL_VOLUME,target=/var/lib/mysql" \
-                      --health-cmd='mysqladmin ping -h localhost -uroot -pci-root-password --silent' \
-                      --health-interval=5s \
-                      --health-timeout=5s \
-                      --health-retries=30 \
-                      mysql:8.4
+            docker network create "$CI_NETWORK"
+            docker volume create "$MYSQL_VOLUME"
 
-                    attempt=0
-                    until [ "$(docker inspect --format='{{.State.Health.Status}}' "$MYSQL_CONTAINER")" = healthy ]; do
-                      state="$(docker inspect --format='{{.State.Status}}' "$MYSQL_CONTAINER")"
+            echo "Starting MySQL..."
+            docker run -d \
+              --name "$MYSQL_CONTAINER" \
+              --network "$CI_NETWORK" \
+              --network-alias mysql \
+              --restart no \
+              -e MYSQL_DATABASE=lumera_db \
+              -e MYSQL_USER="$DB_USERNAME" \
+              -e MYSQL_PASSWORD="$DB_PASSWORD" \
+              -e MYSQL_ROOT_PASSWORD="$DB_ROOT_PASSWORD" \
+              --mount "source=$MYSQL_VOLUME,target=/var/lib/mysql" \
+              --health-cmd='mysqladmin ping -h 127.0.0.1 -uroot -pci-root-password --silent' \
+              --health-interval=5s \
+              --health-timeout=5s \
+              --health-retries=30 \
+              mysql:8.4
 
-                      if [ "$state" = exited ] || [ "$state" = dead ]; then
-                        docker logs "$MYSQL_CONTAINER"
-                        exit 1
-                      fi
+            attempt=0
+            while [ "$attempt" -lt 60 ]; do
+                state="$(docker inspect --format='{{.State.Status}}' "$MYSQL_CONTAINER")"
+                health="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$MYSQL_CONTAINER")"
 
-                      attempt=$((attempt + 1))
-                      if [ "$attempt" -ge 60 ]; then
-                        docker logs "$MYSQL_CONTAINER"
-                        echo "MySQL health check timed out."
-                        exit 1
-                      fi
+                echo "MySQL state=$state health=$health attempt=$attempt"
 
-                      sleep 3
-                    done
-                '''
-            }
-        }
+                if [ "$health" = healthy ]; then
+                    echo "MySQL is healthy."
+                    exit 0
+                fi
+
+                if [ "$state" = exited ] || [ "$state" = dead ]; then
+                    echo "MySQL container stopped unexpectedly."
+                    docker logs "$MYSQL_CONTAINER" || true
+                    exit 1
+                fi
+
+                attempt=$((attempt + 1))
+                sleep 3
+            done
+
+            echo "MySQL health check timed out."
+            docker inspect "$MYSQL_CONTAINER" || true
+            docker logs "$MYSQL_CONTAINER" || true
+            exit 1
+        '''
+    }
+}
 
         
 stage('Backend tests') {
