@@ -86,24 +86,31 @@ pipeline {
             }
         }
 
-        stage('Backend tests') {
-            steps {
-                sh '''
-                    set -eu
+        
+stage('Backend tests') {
+    steps {
+        sh '''
+            set -eu
 
-                    docker run --rm \
-                      --network "$CI_NETWORK" \
-                      -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
-                      -e DB_USERNAME="$DB_USERNAME" \
-                      -e DB_PASSWORD="$DB_PASSWORD" \
-                      -e JWT_SECRET="$JWT_SECRET" \
-                      -v "$WORKSPACE/backend:/app" \
-                      -w /app \
-                      eclipse-temurin:25-jdk \
-                      sh -c 'chmod +x mvnw && ./mvnw --batch-mode test'
-                '''
-            }
-        }
+            echo "Checking backend files..."
+            ls -la "$WORKSPACE/backend"
+            test -f "$WORKSPACE/backend/pom.xml"
+            test -f "$WORKSPACE/backend/mvnw"
+
+            docker run --rm \
+              --network "$CI_NETWORK" \
+              -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
+              -e DB_USERNAME="$DB_USERNAME" \
+              -e DB_PASSWORD="$DB_PASSWORD" \
+              -e JWT_SECRET="$JWT_SECRET" \
+              -v "$WORKSPACE/backend:/app" \
+              -w /app \
+              eclipse-temurin:25-jdk \
+              sh -c 'ls -la; chmod +x ./mvnw && ./mvnw --batch-mode test'
+        '''
+    }
+}
+
 
         stage('Build application images') {
             steps {
