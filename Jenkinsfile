@@ -11,7 +11,7 @@ pipeline {
         DB_USERNAME = 'lumera'
         DB_PASSWORD = 'lumera-ci-password'
         DB_ROOT_PASSWORD = 'ci-root-password'
-        JWT_SECRET = 'ci-only-secret-key-at-least-32-characters-long'
+        JWT_SECRET = credentials('lumera-jwt-secret')
 
         CI_NETWORK = 'lumera-ci-network'
         MYSQL_CONTAINER = 'lumera-ci-mysql'
@@ -135,21 +135,35 @@ DOCKERFILE
             }
         }
 
+        
         stage('Backend tests') {
             steps {
                 sh '''
-                    set -eu
-                    docker run --rm \\
-                      --network "$CI_NETWORK" \\
-                      -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \\
-                      -e DB_USERNAME="$DB_USERNAME" \\
-                      -e DB_PASSWORD="$DB_PASSWORD" \\
-                      -e JWT_SECRET="$JWT_SECRET" \\
-                      "$BACKEND_TEST_IMAGE" \\
-                      --batch-mode test
-                '''
-            }
-        }
+                  set -eu
+
+                   echo "Checking MySQL health..."
+                  docker inspect --format='{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "$MYSQL_CONTAINER"
+
+                 echo "Checking database connectivity..."
+                 docker run --rm \
+                      --network "$CI_NETWORK" \
+                      -e MYSQL_PWD="$DB_PASSWORD" \
+                      mysql:8.4 \
+                      mysqladmin ping -h mysql -u "$DB_USERNAME" --silent
+
+                   echo "Running Maven tests..."
+                    docker run --rm \
+                     --network "$CI_NETWORK" \
+                    -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
+                    -e DB_USERNAME="$DB_USERNAME" \
+                     -e DB_PASSWORD="$DB_PASSWORD" \
+                     -e JWT_SECRET="$JWT_SECRET" \
+                    "$BACKEND_TEST_IMAGE" \
+                    --batch-mode --no-transfer-progress test
+        '''
+    }
+}
+
 
         stage('Build application images') {
             steps {
