@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -21,12 +20,29 @@ pipeline {
 
         MYSQL_VOLUME = 'lumera-ci-mysql-data'
         UPLOADS_VOLUME = 'lumera-ci-uploads'
+
+        BACKEND_TEST_IMAGE = 'lumera-ci-backend-test:build'
+        BACKEND_IMAGE = 'lumera-ci-backend:build'
+        FRONTEND_IMAGE = 'lumera-ci-frontend:build'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
+
+                sh '''
+                    set -eu
+                    echo "Checked out commit:"
+                    git rev-parse HEAD
+                    echo "Jenkinsfile location:"
+                    pwd
+                    echo "Docker Compose references (should be empty):"
+                    if grep -n 'docker compose' Jenkinsfile; then
+                        echo "ERROR: Old Docker Compose commands remain."
+                        exit 1
+                    fi
+                '''
             }
         }
 
@@ -36,6 +52,36 @@ pipeline {
                     set -eu
                     docker --version
                     docker info
+                    test -f backend/pom.xml
+                    test -f backend/mvnw
+                    test -f backend/Dockerfile
+                    test -f frontend/Dockerfile
+                    echo "Required project files found."
+                '''
+            }
+        }
+
+        stage('Prepare CI resources') {
+            steps {
+                sh '''
+                    set -eu
+
+                    echo "Removing leftover CI containers..."
+                    docker rm -f \
+                      "$FRONTEND_CONTAINER" \
+                      "$BACKEND_CONTAINER" \
+                      "$MYSQL_CONTAINER" 2>/dev/null || true
+
+                    docker network rm "$CI_NETWORK" 2>/dev/null || true
+
+                    # These volumes contain CI test data only.
+                    docker volume rm \
+                      "$MYSQL_VOLUME" \
+                      "$UPLOADS_VOLUME" 2>/dev/null || true
+
+                    docker network create "$CI_NETWORK"
+                    docker volume create "$MYSQL_VOLUME"
+                    docker volume create "$UPLOADS_VOLUME"
                 '''
             }
         }
@@ -44,14 +90,6 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-
-                    echo "Cleaning up leftover CI resources..."
-                    docker rm -f "$MYSQL_CONTAINER" 2>/dev/null || true
-                    docker network rm "$CI_NETWORK" 2>/dev/null || true
-                    docker volume rm "$MYSQL_VOLUME" 2>/dev/null || true
-
-                    docker network create "$CI_NETWORK"
-                    docker volume create "$MYSQL_VOLUME"
 
                     echo "Starting MySQL..."
                     docker run -d \
@@ -67,12 +105,10 @@ pipeline {
                       --health-cmd='mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --silent' \
                       --health-interval=5s \
                       --health-timeout=5s \
-                      --health-start-period=15m \
+                      --health-start-period=30s \
                       --health-retries=60 \
                       mysql:8.4
 
-                    # Initializing MySQL on this resource-limited Docker host took
-                    # longer than three minutes. Allow up to 15 minutes for readiness.
                     attempt=0
                     while [ "$attempt" -lt 300 ]; do
                         state="$(docker inspect --format='{{.State.Status}}' "$MYSQL_CONTAINER")"
@@ -86,7 +122,7 @@ pipeline {
                         fi
 
                         if [ "$state" = exited ] || [ "$state" = dead ]; then
-                            echo "MySQL container stopped unexpectedly."
+                            echo "MySQL exited unexpectedly."
                             docker logs "$MYSQL_CONTAINER" || true
                             exit 1
                         fi
@@ -95,10 +131,29 @@ pipeline {
                         sleep 3
                     done
 
-                    echo "MySQL did not become healthy within 15 minutes."
-                    docker inspect --format='Health status={{.State.Health.Status}}{{range .State.Health.Log}}{{printf "\\nexit=%d output=%s" .ExitCode .Output}}{{end}}' "$MYSQL_CONTAINER" || true
+                    echo "MySQL health check timed out."
+                    docker inspect "$MYSQL_CONTAINER" || true
                     docker logs "$MYSQL_CONTAINER" || true
                     exit 1
+                '''
+            }
+        }
+
+        stage('Build backend test image') {
+            steps {
+                sh '''
+                    set -eu
+
+                    echo "Building a test image from the backend source..."
+                    docker build --pull \
+                      --tag "$BACKEND_TEST_IMAGE" \
+                      --file - backend <<'DOCKERFILE'
+FROM eclipse-temurin:25-jdk
+WORKDIR /app
+COPY . /app
+RUN chmod +x ./mvnw
+ENTRYPOINT ["./mvnw"]
+DOCKERFILE
                 '''
             }
         }
@@ -108,24 +163,15 @@ pipeline {
                 sh '''
                     set -eu
 
-                    echo "Checking backend files..."
-                    test -f "$WORKSPACE/backend/pom.xml"
-                    test -f "$WORKSPACE/backend/mvnw"
-
-                    if ! docker run --rm \
+                    echo "Running Maven tests inside the test image..."
+                    docker run --rm \
                       --network "$CI_NETWORK" \
                       -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
                       -e DB_USERNAME="$DB_USERNAME" \
                       -e DB_PASSWORD="$DB_PASSWORD" \
                       -e JWT_SECRET="$JWT_SECRET" \
-                      --mount "type=bind,source=$WORKSPACE/backend,target=/app" \
-                      -w /app \
-                      eclipse-temurin:25-jdk \
-                      sh -c 'chmod +x ./mvnw && ./mvnw --batch-mode test' \
-                      > jenkins-backend-tests.log 2>&1; then
-                        cat jenkins-backend-tests.log
-                        exit 1
-                    fi
+                      "$BACKEND_TEST_IMAGE" \
+                      --batch-mode test
                 '''
             }
         }
@@ -135,12 +181,14 @@ pipeline {
                 sh '''
                     set -eu
 
+                    echo "Building backend image..."
                     docker build --pull \
-                      -t lumera-ci-backend:build \
+                      --tag "$BACKEND_IMAGE" \
                       ./backend
 
+                    echo "Building frontend image..."
                     docker build --pull \
-                      -t lumera-ci-frontend:build \
+                      --tag "$FRONTEND_IMAGE" \
                       ./frontend
                 '''
             }
@@ -151,8 +199,7 @@ pipeline {
                 sh '''
                     set -eu
 
-                    docker volume create "$UPLOADS_VOLUME"
-
+                    echo "Starting backend..."
                     docker run -d \
                       --name "$BACKEND_CONTAINER" \
                       --network "$CI_NETWORK" \
@@ -170,14 +217,15 @@ pipeline {
                       -e PAYHERE_NOTIFY_URL='http://localhost/api/payments/payhere/notify' \
                       -e UPLOAD_DIR=/app/uploads/products \
                       --mount "source=$UPLOADS_VOLUME,target=/app/uploads" \
-                      lumera-ci-backend:build
+                      "$BACKEND_IMAGE"
 
+                    echo "Starting frontend..."
                     docker run -d \
                       --name "$FRONTEND_CONTAINER" \
                       --network "$CI_NETWORK" \
                       --network-alias frontend \
                       --restart no \
-                      lumera-ci-frontend:build
+                      "$FRONTEND_IMAGE"
 
                     docker ps --filter "network=$CI_NETWORK"
                 '''
@@ -189,31 +237,38 @@ pipeline {
                 sh '''
                     set -eu
 
+                    echo "Checking frontend..."
                     attempt=0
+
                     until docker run --rm \
                       --network "$CI_NETWORK" \
                       curlimages/curl:8.12.1 \
                       --fail --silent --show-error \
                       http://frontend/; do
 
-                      attempt=$((attempt + 1))
-                      if [ "$attempt" -ge 24 ]; then
-                        echo "Frontend did not become ready."
-                        docker logs "$FRONTEND_CONTAINER" || true
-                        docker logs "$BACKEND_CONTAINER" || true
-                        exit 1
-                      fi
-                      sleep 5
+                        attempt=$((attempt + 1))
+
+                        if [ "$attempt" -ge 24 ]; then
+                            echo "Frontend did not become ready."
+                            docker logs "$FRONTEND_CONTAINER" || true
+                            docker logs "$BACKEND_CONTAINER" || true
+                            exit 1
+                        fi
+
+                        sleep 5
                     done
 
+                    echo "Checking products API..."
                     docker run --rm \
                       --network "$CI_NETWORK" \
                       curlimages/curl:8.12.1 \
                       --fail --silent --show-error \
-                      --retry 12 --retry-connrefused --retry-delay 5 \
+                      --retry 12 \
+                      --retry-connrefused \
+                      --retry-delay 5 \
                       http://frontend/api/products
 
-                    echo "Frontend and product API smoke tests passed."
+                    echo "Frontend and products API checks passed."
                 '''
             }
         }
@@ -222,11 +277,20 @@ pipeline {
     post {
         always {
             sh '''
-                docker logs "$MYSQL_CONTAINER" > jenkins-mysql.log 2>&1 || true
-                docker logs "$BACKEND_CONTAINER" > jenkins-backend.log 2>&1 || true
-                docker logs "$FRONTEND_CONTAINER" > jenkins-frontend.log 2>&1 || true
+                echo "Collecting diagnostic logs..."
+
+                docker logs "$MYSQL_CONTAINER" \
+                  > jenkins-mysql.log 2>&1 || true
+
+                docker logs "$BACKEND_CONTAINER" \
+                  > jenkins-backend.log 2>&1 || true
+
+                docker logs "$FRONTEND_CONTAINER" \
+                  > jenkins-frontend.log 2>&1 || true
+
                 docker ps -a > jenkins-docker-ps.log 2>&1 || true
 
+                echo "Cleaning up CI containers..."
                 docker rm -f \
                   "$FRONTEND_CONTAINER" \
                   "$BACKEND_CONTAINER" \
@@ -246,11 +310,11 @@ pipeline {
         }
 
         success {
-            echo 'Lumera build, tests, and smoke checks passed.'
+            echo 'Lumera build, backend tests, and smoke checks passed.'
         }
 
         failure {
-            echo 'Lumera pipeline failed. Review the failed stage and archived logs.'
+            echo 'Pipeline failed. Review the failed stage and archived logs.'
         }
     }
 }
