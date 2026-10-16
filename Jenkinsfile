@@ -5,7 +5,7 @@ pipeline {
     options {
         timestamps()
         disableConcurrentBuilds()
-        timeout(time: 40, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')
     }
 
     environment {
@@ -40,100 +40,95 @@ pipeline {
             }
         }
 
-        
-stage('Start MySQL') {
-    steps {
-        sh '''
-            set -eu
+        stage('Start MySQL') {
+            steps {
+                sh '''
+                    set -eu
 
-            echo "Cleaning up leftover CI resources..."
-            docker rm -f "$MYSQL_CONTAINER" 2>/dev/null || true
-            docker network rm "$CI_NETWORK" 2>/dev/null || true
+                    echo "Cleaning up leftover CI resources..."
+                    docker rm -f "$MYSQL_CONTAINER" 2>/dev/null || true
+                    docker network rm "$CI_NETWORK" 2>/dev/null || true
+                    docker volume rm "$MYSQL_VOLUME" 2>/dev/null || true
 
-            docker network create "$CI_NETWORK"
-            docker volume create "$MYSQL_VOLUME"
+                    docker network create "$CI_NETWORK"
+                    docker volume create "$MYSQL_VOLUME"
 
-            echo "Starting MySQL..."
-            docker run -d \
-              --name "$MYSQL_CONTAINER" \
-              --network "$CI_NETWORK" \
-              --network-alias mysql \
-              --restart no \
-              -e MYSQL_DATABASE=lumera_db \
-              -e MYSQL_USER="$DB_USERNAME" \
-              -e MYSQL_PASSWORD="$DB_PASSWORD" \
-              -e MYSQL_ROOT_PASSWORD="$DB_ROOT_PASSWORD" \
-              --mount "source=$MYSQL_VOLUME,target=/var/lib/mysql" \
-              --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -p\$MYSQL_ROOT_PASSWORD --silent" \
-              --health-interval=5s \
-              --health-timeout=5s \
-              --health-start-period=10m \
-              --health-retries=60 \
-              mysql:8.4
+                    echo "Starting MySQL..."
+                    docker run -d \
+                      --name "$MYSQL_CONTAINER" \
+                      --network "$CI_NETWORK" \
+                      --network-alias mysql \
+                      --restart no \
+                      -e MYSQL_DATABASE=lumera_db \
+                      -e MYSQL_USER="$DB_USERNAME" \
+                      -e MYSQL_PASSWORD="$DB_PASSWORD" \
+                      -e MYSQL_ROOT_PASSWORD="$DB_ROOT_PASSWORD" \
+                      --mount "source=$MYSQL_VOLUME,target=/var/lib/mysql" \
+                      --health-cmd='mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --silent' \
+                      --health-interval=5s \
+                      --health-timeout=5s \
+                      --health-start-period=15m \
+                      --health-retries=60 \
+                      mysql:8.4
 
-            attempt=0
-            # A fresh MySQL data directory can take several minutes to initialize,
-            # especially on a resource-constrained Jenkins/Docker Desktop host.
-            while [ "$attempt" -lt 200 ]; do
-                state="$(docker inspect --format='{{.State.Status}}' "$MYSQL_CONTAINER")"
-                health="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$MYSQL_CONTAINER")"
+                    # Initializing MySQL on this resource-limited Docker host took
+                    # longer than three minutes. Allow up to 15 minutes for readiness.
+                    attempt=0
+                    while [ "$attempt" -lt 300 ]; do
+                        state="$(docker inspect --format='{{.State.Status}}' "$MYSQL_CONTAINER")"
+                        health="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$MYSQL_CONTAINER")"
 
-                echo "MySQL state=$state health=$health attempt=$attempt"
+                        echo "MySQL state=$state health=$health attempt=$attempt/300"
 
-                if [ "$health" = healthy ]; then
-                    echo "MySQL is healthy."
-                    exit 0
-                fi
+                        if [ "$health" = healthy ]; then
+                            echo "MySQL is healthy."
+                            exit 0
+                        fi
 
-                if [ "$state" = exited ] || [ "$state" = dead ]; then
-                    echo "MySQL container stopped unexpectedly."
+                        if [ "$state" = exited ] || [ "$state" = dead ]; then
+                            echo "MySQL container stopped unexpectedly."
+                            docker logs "$MYSQL_CONTAINER" || true
+                            exit 1
+                        fi
+
+                        attempt=$((attempt + 1))
+                        sleep 3
+                    done
+
+                    echo "MySQL did not become healthy within 15 minutes."
+                    docker inspect --format='Health status={{.State.Health.Status}}{{range .State.Health.Log}}{{printf "\\nexit=%d output=%s" .ExitCode .Output}}{{end}}' "$MYSQL_CONTAINER" || true
                     docker logs "$MYSQL_CONTAINER" || true
                     exit 1
-                fi
+                '''
+            }
+        }
 
-                attempt=$((attempt + 1))
-                sleep 3
-            done
+        stage('Backend tests') {
+            steps {
+                sh '''
+                    set -eu
 
-            echo "MySQL health check timed out."
-            docker inspect "$MYSQL_CONTAINER" || true
-            docker logs "$MYSQL_CONTAINER" || true
-            exit 1
-        '''
-    }
-}
+                    echo "Checking backend files..."
+                    test -f "$WORKSPACE/backend/pom.xml"
+                    test -f "$WORKSPACE/backend/mvnw"
 
-        
-
-stage('Backend tests') {
-    steps {
-        sh '''
-            set -eu
-
-            echo "Checking backend files..."
-            ls -la "$WORKSPACE/backend"
-            test -f "$WORKSPACE/backend/pom.xml"
-            test -f "$WORKSPACE/backend/mvnw"
-
-            if ! docker run --rm \
-              --network "$CI_NETWORK" \
-              -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
-              -e DB_USERNAME="$DB_USERNAME" \
-              -e DB_PASSWORD="$DB_PASSWORD" \
-              -e JWT_SECRET="$JWT_SECRET" \
-              --mount "type=bind,source=$WORKSPACE/backend,target=/app" \
-              -w /app \
-              eclipse-temurin:25-jdk \
-              sh -c 'ls -la /app && chmod +x ./mvnw && ./mvnw --batch-mode test' \
-              > jenkins-backend-tests.log 2>&1; then
-                cat jenkins-backend-tests.log
-                exit 1
-            fi
-        '''
-    }
-}
-
-
+                    if ! docker run --rm \
+                      --network "$CI_NETWORK" \
+                      -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
+                      -e DB_USERNAME="$DB_USERNAME" \
+                      -e DB_PASSWORD="$DB_PASSWORD" \
+                      -e JWT_SECRET="$JWT_SECRET" \
+                      --mount "type=bind,source=$WORKSPACE/backend,target=/app" \
+                      -w /app \
+                      eclipse-temurin:25-jdk \
+                      sh -c 'chmod +x ./mvnw && ./mvnw --batch-mode test' \
+                      > jenkins-backend-tests.log 2>&1; then
+                        cat jenkins-backend-tests.log
+                        exit 1
+                    fi
+                '''
+            }
+        }
 
         stage('Build application images') {
             steps {
