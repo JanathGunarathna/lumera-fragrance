@@ -64,14 +64,17 @@ stage('Start MySQL') {
               -e MYSQL_PASSWORD="$DB_PASSWORD" \
               -e MYSQL_ROOT_PASSWORD="$DB_ROOT_PASSWORD" \
               --mount "source=$MYSQL_VOLUME,target=/var/lib/mysql" \
-              --health-cmd='mysqladmin ping -h 127.0.0.1 -uroot -pci-root-password --silent' \
+              --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -p\$MYSQL_ROOT_PASSWORD --silent" \
               --health-interval=5s \
               --health-timeout=5s \
-              --health-retries=30 \
+              --health-start-period=10m \
+              --health-retries=60 \
               mysql:8.4
 
             attempt=0
-            while [ "$attempt" -lt 60 ]; do
+            # A fresh MySQL data directory can take several minutes to initialize,
+            # especially on a resource-constrained Jenkins/Docker Desktop host.
+            while [ "$attempt" -lt 200 ]; do
                 state="$(docker inspect --format='{{.State.Status}}' "$MYSQL_CONTAINER")"
                 health="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$MYSQL_CONTAINER")"
 
