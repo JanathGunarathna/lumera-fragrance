@@ -6,8 +6,8 @@ Full-stack perfume e-commerce application.
 
 - React + Vite
 - Tailwind CSS + Bootstrap
-- Spring Boot 3.3.5
-- Java 21
+- Spring Boot 3.5.16
+- Java 25 (LTS)
 - Spring Security + JWT
 - MySQL
 - PayHere Checkout API

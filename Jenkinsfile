@@ -49,7 +49,7 @@ pipeline {
                       -e JWT_SECRET='ci-only-secret-key-at-least-32-characters-long' \
                       -v "$WORKSPACE/backend:/app" \
                       -w /app \
-                      eclipse-temurin:21-jdk \
+                      eclipse-temurin:25-jdk \
                       sh -c 'chmod +x mvnw && ./mvnw --batch-mode test'
                 '''
             }
