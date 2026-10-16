@@ -115,7 +115,7 @@ stage('Backend tests') {
             test -f "$WORKSPACE/backend/pom.xml"
             test -f "$WORKSPACE/backend/mvnw"
 
-            docker run --rm \
+            if ! docker run --rm \
               --network "$CI_NETWORK" \
               -e DB_URL='jdbc:mysql://mysql:3306/lumera_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true' \
               -e DB_USERNAME="$DB_USERNAME" \
@@ -124,7 +124,11 @@ stage('Backend tests') {
               --mount "type=bind,source=$WORKSPACE/backend,target=/app" \
               -w /app \
               eclipse-temurin:25-jdk \
-              sh -c 'ls -la /app && chmod +x ./mvnw && ./mvnw --batch-mode test'
+              sh -c 'ls -la /app && chmod +x ./mvnw && ./mvnw --batch-mode test' \
+              > jenkins-backend-tests.log 2>&1; then
+                cat jenkins-backend-tests.log
+                exit 1
+            fi
         '''
     }
 }
