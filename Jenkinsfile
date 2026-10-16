@@ -101,6 +101,7 @@ stage('Start MySQL') {
 }
 
         
+
 stage('Backend tests') {
     steps {
         sh '''
@@ -117,13 +118,14 @@ stage('Backend tests') {
               -e DB_USERNAME="$DB_USERNAME" \
               -e DB_PASSWORD="$DB_PASSWORD" \
               -e JWT_SECRET="$JWT_SECRET" \
-              -v "$WORKSPACE/backend:/app" \
+              --mount "type=bind,source=$WORKSPACE/backend,target=/app" \
               -w /app \
               eclipse-temurin:25-jdk \
-              sh -c 'ls -la; chmod +x ./mvnw && ./mvnw --batch-mode test'
+              sh -c 'ls -la /app && chmod +x ./mvnw && ./mvnw --batch-mode test'
         '''
     }
 }
+
 
 
         stage('Build application images') {
